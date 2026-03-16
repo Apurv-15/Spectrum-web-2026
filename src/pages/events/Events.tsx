@@ -82,8 +82,23 @@ export default function Events() {
   const { goToPage } = useContext(navContext);
   const timelineRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const bgRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
+    if (bgRef.current && containerRef.current) {
+      gsap.to(bgRef.current, {
+        yPercent: 15,
+        ease: "none",
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
+    }
+
     cardRefs.current.forEach((card, i) => {
       if (!card) return;
       gsap.fromTo(
@@ -112,7 +127,30 @@ export default function Events() {
   }, []);
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} ref={containerRef}>
+      <div className={styles.backgroundWrapper}>
+        <div className={styles.bgParallax} ref={bgRef} />
+        <div className={styles.fogOverlay} />
+      </div>
+      <div className={styles.ambientOverlay} />
+      
+      <div className={styles.sakuraContainer}>
+        {[...Array(30)].map((_, i) => (
+          <div
+            key={i}
+            className={styles.sakura}
+            style={{
+              left: `${Math.random() * 100}%`,
+              animationDuration: `${Math.random() * 5 + 5}s, ${Math.random() * 3 + 2}s`,
+              animationDelay: `-${Math.random() * 5}s, -${Math.random() * 3}s`,
+              width: `${Math.random() * 6 + 8}px`,
+              height: `${Math.random() * 8 + 12}px`,
+              opacity: Math.random() * 0.4 + 0.4,
+            }}
+          />
+        ))}
+      </div>
+
       <BackButton className={styles.backBtn} />
 
       <div className={styles.header}>

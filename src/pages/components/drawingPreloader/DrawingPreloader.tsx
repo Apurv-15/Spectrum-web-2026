@@ -94,7 +94,7 @@ export default function DrawingPreloader({
           loadedAssets++;
           setProgress(
             (loadedAssets / (imagesToPreload.length + soundsToPreload.length)) *
-              99
+            99
           );
           const canvas = document.createElement("canvas");
           canvas.width = img.naturalWidth;
@@ -118,7 +118,7 @@ export default function DrawingPreloader({
           loadedAssets++;
           setProgress(
             (loadedAssets / (imagesToPreload.length + soundsToPreload.length)) *
-              99
+            99
           );
           resolve(audio);
         };
@@ -143,7 +143,7 @@ export default function DrawingPreloader({
         })
       ),
     ])
-      .then(() => {})
+      .then(() => { })
       .catch((err) => {
         console.error("Error preloading images:", err);
       });

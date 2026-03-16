@@ -458,9 +458,8 @@ export default function LandingRevamp({
   return (
     <>
       <main
-        className={`${styles.wrapper} ${
-          !removeGif ? styles.pointerNoneEvent : ""
-        } ${overlayIsActive ? styles.mask : ""}`}
+        className={`${styles.wrapper} ${!removeGif ? styles.pointerNoneEvent : ""
+          } ${overlayIsActive ? styles.mask : ""}`}
         ref={wrapperRef}
       >
         <Navbar />
@@ -510,7 +509,7 @@ export default function LandingRevamp({
               src={mobileMountains}
               className={styles.mobileMountains}
               alt="Mountains"
-              // ref={landingMobileRef}
+            // ref={landingMobileRef}
             />
             <img
               src={mobileBackground}
