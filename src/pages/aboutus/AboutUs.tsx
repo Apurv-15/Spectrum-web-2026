@@ -21,7 +21,7 @@ import letter6 from "/svgs/aboutus/letter6.svg";
 import letter7 from "/svgs/aboutus/letter7.svg";
 import letter8 from "/svgs/aboutus/letter8.svg";
 import VideoMetaData from "./components/VideoMetaData";
-import { Helmet } from "react-helmet";
+// Helmet removed — SEO handled in index.html
 import SocialLinks from "./components/SocialLinks/SocialLinks";
 import AboutText from "./components/AboutText/AboutText";
 import { useYouTubePlayer } from "./components/useYoutubePlayer/useYoutubePlayer";
@@ -48,13 +48,13 @@ const icons = [
   letter8,
 ];
 
-const videos = ["V9LHjddKR_M", "Ogio7ZJSb9g", "5MtkggVC0w0", "krsrGOqnAN0"];
+const videos = ["V9LHjddKR_M"];
 const mainVideoMetadata = {
   id: "V9LHjddKR_M",
-  title: "Official Theme Reveal | Oasis 2025 | Whispers of Edo",
+  title: "Spectrum Week 2026 | GDG VIT Mumbai",
   description:
-    'It’s getting closer! Oasis, the cultural festival of BITS Pilani, returns this year with the theme "Whispers of Edo", setting the tone for four unforgettable days. From performances to pro-shows, competitions to experiences—this is where it all begins.',
-  uploadDate: "2025-09-24T14:00:55+05:30",
+    "Spectrum Week — 4 days of coding battles, AI talks, strategy games, and a hackathon. By Google Developer Group, VIT Mumbai.",
+  uploadDate: "2026-03-01T00:00:00+05:30",
 };
 const iconImages: HTMLImageElement[] = icons.map((src) => {
   const img = new Image();
@@ -97,10 +97,7 @@ const { isPlaying, nextVideo, prevVideo, togglePlayPause } = useYouTubePlayer(vi
 
   return (
     <div>
-      <Helmet>
-        <title>About Us | OASIS 2025 | Whispers of Edo</title>
-        <meta name="robots" content="index, follow" />
-      </Helmet>
+      {/* Title: About | Spectrum Week 2026 | GDG VIT Mumbai */}
       <div
         className={styles.AboutContainer}
         ref={AboutRef}

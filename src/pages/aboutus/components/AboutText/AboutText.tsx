@@ -13,14 +13,13 @@ const AboutText = ({ isMobile }: AboutTextProps) => (
       style={{ backgroundImage: isMobile ? "none" : `url("${aboutTextBG}")` }}
     >
       <p>
-        Oasis, the annual cultural extravaganza of Birla Institute of
-                Technology and Science, Pilani, has been a vibrant part of
-                India's cultural tapestry since 1971. Managed entirely by
-                students, it's a dazzling showcase of talent in Dance, Drama,
-                Literature, Comedy, Fashion, and Music. It's where dreams come
-                alive, laughter fills the air, and creativity knows no bounds.
-                Step into the world of Oasis, where youth's boundless potential
-                shines.
+        Google Developer Group VIT Mumbai is a community of passionate
+                developers and tech enthusiasts at Vidyalankar Institute of
+                Technology, Mumbai. We foster a culture of innovation by
+                organizing workshops, hackathons, speaker sessions, and coding
+                competitions. Spectrum Week is our flagship 4-day tech
+                extravaganza — featuring coding battles, AI talks, strategy
+                games, and a massive hackathon. Build. Ship. Inspire.
       </p>
     </div>
     <div className={styles.abtus}>

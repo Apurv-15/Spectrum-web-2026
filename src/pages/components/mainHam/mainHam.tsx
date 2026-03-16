@@ -42,44 +42,44 @@ export default function mainHam({
 
   const hamItems = [
     {
-      title: "ROCKTAVES",
+      title: "EVENTS",
       cloud: hamCloud,
       classNameDiv: styles.devDiv,
       classNameText: styles.devText,
       classNameCloud: styles.devCloud,
-      url: "https://rocktaves.bits-oasis.org/",
+      url: "/events",
     },
     {
-      title: "GALLERY",
+      title: "HEAVENLY STRIKE",
       cloud: hamCloud,
       classNameDiv: styles.sponsDiv,
       classNameText: styles.sponsText,
       classNameCloud: styles.sponsCloud,
-      url: "/gallery", // Replace with actual URL
+      url: "/events/heavenly-strike",
     },
     {
-      title: "SPONSORS",
+      title: "WAY OF THE GHOST",
       cloud: hamCloud,
       classNameDiv: styles.galleryDiv,
       classNameText: styles.galleryText,
       classNameCloud: styles.galleryCloud,
-      url: "/sponsors", // Replace with actual URL
+      url: "/events/way-of-ghost",
     },
     {
-      title: "MEDIA PARTNERS",
+      title: "THE INVASION",
       cloud: hamCloud,
       classNameDiv: styles.mediaPartnersDiv,
       classNameText: styles.mediaPartnersText,
       classNameCloud: styles.mediaPartnersCloud,
-      url: "/mediaPartners", // Replace with actual URL
+      url: "/events/invasion",
     },
     {
-      title: "BROCHURE",
+      title: "ABOUT",
       cloud: hamCloud,
       classNameDiv: styles.wallMagDiv,
       classNameText: styles.wallMagText,
       classNameCloud: styles.wallMagCloud,
-      url: "/brochure", // Replace with actual URL
+      url: "/about",
     },
   ];
 

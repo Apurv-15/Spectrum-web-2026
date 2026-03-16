@@ -1,7 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /about$
-Disallow: /download
-Allow: /aboutus
 
-Sitemap: https://www.bits-oasis.org/sitemap.xml
+Sitemap: https://spectrumweek.gdgvitmumbai.com/sitemap.xml

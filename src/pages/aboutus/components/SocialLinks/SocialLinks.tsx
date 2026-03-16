@@ -6,10 +6,10 @@ import yticon from "/svgs/aboutus/yticon.svg";
 
 const SocialLinks = () => (
   <div className={styles.social}>
-    <a href="https://www.linkedin.com/company/oasis24-bits-pilani/"><img src={linkedin} /></a>
-    <a href="https://www.youtube.com/@oasisbitspilani6375"><img src={yticon} /></a>
-    <a href="https://twitter.com/bitsoasis"><img src={xicon} /></a>
-    <a href="https://www.instagram.com/bitsoasis"><img src={instaicon} /></a>
+    <a href="https://www.linkedin.com/company/gdgvitmumbai/" target="_blank" rel="noopener noreferrer"><img src={linkedin} alt="LinkedIn" /></a>
+    <a href="https://www.youtube.com/@gdgvitmumbai" target="_blank" rel="noopener noreferrer"><img src={yticon} alt="YouTube" /></a>
+    <a href="https://x.com/gdgvitmumbai" target="_blank" rel="noopener noreferrer"><img src={xicon} alt="X" /></a>
+    <a href="https://www.instagram.com/gdg.vitm/" target="_blank" rel="noopener noreferrer"><img src={instaicon} alt="Instagram" /></a>
   </div>
 );
 

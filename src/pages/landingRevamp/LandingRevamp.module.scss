@@ -255,13 +255,22 @@ body {
     .logoContainer {
       position: fixed;
       left: 3svw;
-      bottom: 2.5svw;
-      width: 26svw;
+      bottom: 2svw;
+      width: clamp(260px, 26svw, 460px);
       will-change: auto;
       z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
 
       .logo {
+        width: clamp(170px, 16svw, 320px);
+      }
+
+      .profileBanner {
         width: 100%;
+        border: 1px solid rgba(255, 223, 208, 0.25);
+        box-shadow: 0 6px 30px rgba(0, 0, 0, 0.35);
       }
     }
 
@@ -512,8 +521,13 @@ body {
       .logoContainer {
         left: 50%;
         transform: translateX(-50%);
-        top: 150px;
-        width: 300px;
+        top: 120px;
+        width: min(86vw, 360px);
+
+        .logo {
+          width: min(70vw, 260px);
+          margin-inline: auto;
+        }
       }
     }
 

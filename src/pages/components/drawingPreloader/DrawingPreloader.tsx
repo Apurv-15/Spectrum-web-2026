@@ -6,7 +6,6 @@ import useOverlayStore from "../../../utils/store";
 // import { set } from "react-hook-form";
 
 const imagesToPreload = [
-  // "/svgs/logo.svg",
   "/images/doors/Door1.png",
   "/images/doors/Door2.png",
   "/images/doors/Door3.png",
@@ -24,9 +23,7 @@ const imagesToPreload = [
   "/svgs/landing/moonHam.svg",
   "/images/landing/background1.png",
   "/images/landing/tree1.png",
-  "/svgs/landing/insta.svg",
   "/svgs/landing/x.svg",
-  "/svgs/landing/linkden.svg",
   "/svgs/landing/wire.svg",
   "/images/landing/mobileMountains.png",
   "/svgs/landing/instaLamp.svg",
@@ -34,30 +31,9 @@ const imagesToPreload = [
   "/svgs/landing/mobileBackground.svg",
   "/svgs/landing/mobileRegisterBtn.svg",
   "/svgs/landing/registerBtn.svg",
-  // "/images/landing/oasisLogo.png",
-  "/images/landing/logo_final.png",
+  "/images/branding/gdg-spectrum-logo.png",
+  "/images/branding/gdg-spectrum-banner.png",
   "/images/landing/mobileCloud.png",
-  "/images/registration/reg-banner.png",
-  "/svgs/registration/bg-extended.svg",
-  "/svgs/registration/bg-mobile.svg",
-  "/svgs/registration/scrollThumb.svg",
-  "/svgs/registration/scroll-bar.svg",
-  "/svgs/registration/leftarr.svg",
-  "/svgs/registration/rightarr.svg",
-  "/images/contact/contact-banner.png",
-  // "/images/contact/Aryan.png",
-  // "/images/contact/Ahan.png",
-  "/images/contact/Aditya.png",
-  "/images/contact/Arshita.png",
-  "/images/contact/Ayushmaan.png",
-  "/images/contact/Dhruv.png",
-  "/images/contact/Ishita.png",
-  "/images/contact/Pranav.png",
-  "/images/contact/Rahul.png",
-  "/images/contact/SajalY.png",
-  "/images/contact/ContactCard1.png",
-  "/images/contact/DoorsCombined.png",
-  "/images/contact/DoorsMobile.png",
   "/svgs/aboutus/letter1.svg",
   "/svgs/aboutus/letter2.svg",
   "/svgs/aboutus/letter3.svg",
@@ -628,8 +604,8 @@ export default function DrawingPreloader({
             </button>
           </div>
           <div className={styles.infoText}>
-            A new horizon of art and culture awaits. Enter the unforgettable
-            world of Oasis
+            Four days of code, strategy, and innovation await. Enter the world
+            of Spectrum Week
           </div>
         </div>
       )}

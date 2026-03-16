@@ -22,22 +22,19 @@ import eventsBtn from "/svgs/landing/mobileEventsBtn.svg";
 import wire from "/svgs/landing/wire.svg";
 import x from "/svgs/landing/x.svg";
 import xLamp from "/svgs/landing/xLamp.svg";
-import logo from "/images/landing/logo_final.png";
+import logo from "/images/branding/gdg-spectrum-logo.png";
+import profileBanner from "/images/branding/gdg-spectrum-banner.png";
 import mobileCloud from "/images/landing/mobileCloud.png";
 import AboutUs from "../aboutus/AboutUs";
-// import ContactDoors from "../contact/ContactDoors";
-// import Ham from "../components/ham/ham";
 import MainHam from "../components/mainHam/mainHam";
 import Lenis from "@studio-freight/lenis";
 
 import { useMainHamStore } from "../../utils/store";
-import ContactDoors from "../contact/ContactDoors";
-import { Helmet } from "react-helmet";
 import ScrollLabel from "./components/ScrollLabel";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TARGET_DATE = new Date("2025-11-07T19:00:00+05:30");
+const TARGET_DATE = new Date("2026-04-01T00:00:00+05:30");
 
 const socialLinks = [
   {
@@ -46,7 +43,7 @@ const socialLinks = [
     classNameDiv: styles.xDiv,
     classNameLamp: styles.xLamp,
     classNameIcon: styles.xIcon,
-    url: "https://x.com/bitsoasis",
+    url: "https://x.com/gdgvitmumbai",
   },
   {
     icon: linkden,
@@ -54,7 +51,7 @@ const socialLinks = [
     classNameDiv: styles.linkdenDiv,
     classNameLamp: styles.linkdenLamp,
     classNameIcon: styles.linkdenIcon,
-    url: "https://www.linkedin.com/company/oasis24-bits-pilani/",
+    url: "https://www.linkedin.com/company/gdgvitmumbai/",
   },
   {
     icon: insta,
@@ -62,7 +59,7 @@ const socialLinks = [
     classNameDiv: styles.instaDiv,
     classNameLamp: styles.instaLamp,
     classNameIcon: styles.instaIcon,
-    url: "https://www.instagram.com/bitsoasis/",
+    url: "https://www.instagram.com/gdg.vitm/",
   },
 ];
 
@@ -473,10 +470,10 @@ export default function LandingRevamp({
             src={eventsBtn}
             className={styles.mobileEventsBtn}
             onClick={() => goToPage("/events")}
-            alt="Events Button"
+            alt="Explore Events"
           />
 
-          <div className={styles.mobileEventsBtnText}>Events</div>
+          <div className={styles.mobileEventsBtnText}>Explore Events</div>
         </div>
 
         <div
@@ -493,7 +490,8 @@ export default function LandingRevamp({
         </div>
         <div className={styles.backgroundContainer}>
           <div className={styles.logoContainer}>
-            <img src={logo} className={styles.logo} alt="Logo" />
+            <img src={profileBanner} className={styles.profileBanner} alt="GDG Spectrum banner" />
+            <img src={logo} className={styles.logo} alt="GDG Logo for Spectrum" />
           </div>
 
           <div className={styles.desktopBackground} ref={landingRef}>
@@ -579,20 +577,20 @@ export default function LandingRevamp({
             <div className={styles.landingContainer}>
               <div
                 className={styles.registerBtnContainer}
-                onClick={() => goToPage("/register")}
+                onClick={() => goToPage("/events")}
                 ref={registerButtonRef}
               >
                 <img
                   src={registerBtn}
                   className={styles.registerBtn}
-                  alt="Register"
+                  alt="Explore Events"
                 />
                 <img
                   src={mobileRegisterBtn}
                   className={styles.mobileRegisterBtn}
-                  alt="Register"
+                  alt="Explore Events"
                 />
-                <div className={styles.registerBtnText}>Register</div>
+                <div className={styles.registerBtnText}>Explore Events</div>
               </div>
 
               <div className={styles.foregroundContainer}>
@@ -733,20 +731,9 @@ export default function LandingRevamp({
               <AboutUs isBackBtn={false} />
               <div className={styles.aboutUsBottom} id="aboutUsBottom" />
             </div>
-            {aboutUsContRef.current &&
-              aboutUsWrapperRef && ( // bottomSpacerRef.current &&
-                <ContactDoors
-                  pinElemRef={aboutUsContRef}
-                  triggerElemRef={aboutUsWrapperRef}
-                />
-              )}
           </div>
-          {/* <div className={styles.bottomSpacer} ref={bottomSpacerRef}/> */}
         </div>
       </main>
-      <Helmet>
-        <title>OASIS 2025 | Whispers Of Edo</title>
-      </Helmet>
     </>
   );
 }

@@ -20,9 +20,9 @@ gsap.registerPlugin(ScrollTrigger);
 
 const navItems = [
   { label: "Home", katakana: "ホーム", links: "/" },
-  { label: "About Us", katakana: "アバウト・アス", links: "/aboutus" },
+  { label: "About", katakana: "アバウト", links: "/about" },
   { label: "Events", katakana: "イベンツ", links: "/events" },
-  { label: "Contact", katakana: "コンタクト", links: "/contact" },
+  { label: "Hackathon", katakana: "ハッカソン", links: "/events/invasion" },
 ];
 
 export default function Navbar({
