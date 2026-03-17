@@ -5,6 +5,7 @@ import { useGSAP } from "@gsap/react";
 import styles from "./Events.module.scss";
 import BackButton from "../components/backButton/BackButton";
 import { navContext } from "../../App";
+import EventHouse from "../components/eventHouse/EventHouse";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -28,7 +29,7 @@ const EVENTS: EventDay[] = [
     day: "DAY 1",
     date: "1st April",
     title: "THE HEAVENLY STRIKE",
-    subtitle: "The Last Standing Ronin: Speed Code Instant Death",
+    subtitle: "The Last Standing Ronin: Speed Code",
     tagline: "One Breath. One Cut.",
     type: "BATTLE",
     prize: "₹13,000",
@@ -43,7 +44,7 @@ const EVENTS: EventDay[] = [
     date: "2nd April",
     title: "THE AGE OF AI AGENTS",
     subtitle: "Speaker Session",
-    tagline: "Exploring the frontier of autonomous AI systems.",
+    tagline: "Exploring autonomous systems.",
     type: "TALK",
     link: "/events/ai-agents",
     accent: "#4d8eff",
@@ -54,8 +55,8 @@ const EVENTS: EventDay[] = [
     day: "DAY 3",
     date: "3rd April",
     title: "THE WAY OF THE GHOST",
-    subtitle: "Bluff & Bid — Strategy & DSA Competition",
-    tagline: "Survive the grid. Outsmart the ghost.",
+    subtitle: "Bluff & Bid — Strategy",
+    tagline: "Outsmart the ghost.",
     type: "STRATEGY",
     prize: "₹12,000",
     link: "/events/way-of-ghost",
@@ -68,8 +69,8 @@ const EVENTS: EventDay[] = [
     day: "DAY 4",
     date: "4th April",
     title: "THE INVASION",
-    subtitle: "Hack the Ghost — Hybrid Hackathon",
-    tagline: "The ultimate siege. ₹40,000 prize pool.",
+    subtitle: "Hack the Ghost — Hybrid",
+    tagline: "The ultimate siege.",
     type: "HACKATHON",
     prize: "₹40,000",
     link: "/events/invasion",
@@ -80,24 +81,25 @@ const EVENTS: EventDay[] = [
 
 export default function Events() {
   const { goToPage } = useContext(navContext);
-  const timelineRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useGSAP(() => {
-    if (bgRef.current && containerRef.current) {
-      gsap.to(bgRef.current, {
-        yPercent: 15,
-        ease: "none",
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-      });
-    }
+    if (!bgRef.current || !containerRef.current) return;
+
+    // Background moves slowest
+    gsap.to(bgRef.current, {
+      yPercent: 10,
+      ease: "none",
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: "top top",
+        end: "bottom top",
+        scrub: true,
+      },
+    });
 
     cardRefs.current.forEach((card, i) => {
       if (!card) return;
@@ -128,24 +130,40 @@ export default function Events() {
 
   return (
     <div className={styles.container} ref={containerRef}>
+      {/* Background stays same */}
       <div className={styles.backgroundWrapper}>
         <div className={styles.bgParallax} ref={bgRef} />
         <div className={styles.fogOverlay} />
       </div>
       <div className={styles.ambientOverlay} />
       
-      <div className={styles.sakuraContainer}>
-        {[...Array(30)].map((_, i) => (
+      {/* Environmental Animation Layer - Sakura & Lanterns */}
+      <div className={styles.particleContainer}>
+        {[...Array(25)].map((_, i) => (
           <div
-            key={i}
+            key={`sakura-${i}`}
             className={styles.sakura}
             style={{
               left: `${Math.random() * 100}%`,
-              animationDuration: `${Math.random() * 5 + 5}s, ${Math.random() * 3 + 2}s`,
+              animationDuration: `${Math.random() * 5 + 6}s, ${Math.random() * 3 + 2}s`,
               animationDelay: `-${Math.random() * 5}s, -${Math.random() * 3}s`,
-              width: `${Math.random() * 6 + 8}px`,
-              height: `${Math.random() * 8 + 12}px`,
-              opacity: Math.random() * 0.4 + 0.4,
+              width: `${Math.random() * 6 + 6}px`,
+              height: `${Math.random() * 8 + 10}px`,
+              opacity: Math.random() * 0.4 + 0.3,
+            }}
+          />
+        ))}
+
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={`lantern-${i}`}
+            className={styles.driftingLantern}
+            style={{
+              left: `${20 + Math.random() * 60}%`,
+              bottom: `-20%`,
+              animationDuration: `${Math.random() * 15 + 20}s`,
+              animationDelay: `${Math.random() * 10}s`,
+              transform: `scale(${0.5 + Math.random() * 0.5})`,
             }}
           />
         ))}
@@ -153,12 +171,10 @@ export default function Events() {
 
       <BackButton className={styles.backBtn} />
 
+      {/* Header overlay */}
       <div className={styles.header}>
         <h1 className={styles.title}>SPECTRUM WEEK</h1>
-        <p className={styles.subtitle}>
-          GDG VIT Mumbai × GDG UMIT
-        </p>
-        <p className={styles.dateRange}>1st — 4th April 2026</p>
+        <p className={styles.subtitle}>GDG VIT Mumbai × GDG UMIT</p>
         <div className={styles.divider} />
       </div>
 
@@ -170,60 +186,33 @@ export default function Events() {
             key={event.id}
             className={`${styles.card} ${i % 2 === 0 ? styles.cardLeft : styles.cardRight}`}
             ref={(el) => { cardRefs.current[i] = el; }}
-            onClick={() => goToPage?.(event.link)}
           >
             <div className={styles.timelineDot} style={{ borderColor: event.accent }}>
               <div className={styles.dotInner} style={{ backgroundColor: event.accent }} />
             </div>
 
-            <div className={styles.cardContent} style={{ borderColor: `${event.accent}40` }}>
-              <div className={styles.cardHeader}>
-                <span className={styles.cardType} style={{ color: event.accent, backgroundColor: `${event.accent}15` }}>
-                  {event.type}
-                </span>
-                <span className={styles.cardId}>N{event.id}</span>
-              </div>
-
-              <div className={styles.cardDay} style={{ color: event.accent }}>
-                {event.day} — {event.date}
-              </div>
-
-              <h2 className={styles.cardTitle}>{event.title}</h2>
-              <p className={styles.cardSubtitle}>{event.subtitle}</p>
-              <p className={styles.cardTagline}>{event.tagline}</p>
-
-              {event.prize && (
-                <div className={styles.cardPrize}>
-                  <span className={styles.prizeLabel}>PRIZE POOL</span>
-                  <span className={styles.prizeValue} style={{ color: event.accent }}>{event.prize}</span>
+            <div className={styles.houseTimelineWrapper}>
+              <EventHouse
+                {...event}
+                onClickCTA={(link: string) => goToPage?.(link)}
+                onClickRoute={(link: string) => goToPage?.(link)}
+                style={{ position: "relative" }}
+              />
+              <div className={styles.outsideInfo}>
+                <div className={styles.outsideDay} style={{ color: event.accent }}>
+                  {event.day} — {event.date}
                 </div>
-              )}
-
-              <div className={styles.cardArrow} style={{ color: event.accent }}>
-                ENTER →
+                
+                <div className={styles.outsideTitle}>{event.title}</div>
+                <div className={styles.outsideHint}>Click house to reveal details</div>
               </div>
-              <a
-                href={event.registrationLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.registerButton}
-                style={{ borderColor: `${event.accent}66`, color: event.accent }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                Register Now
-              </a>
             </div>
           </div>
         ))}
       </div>
 
       <div className={styles.footer}>
-        <p className={styles.footerText}>
-          Presented by Google Developer Group, VIT Mumbai × GDG UMIT
-        </p>
-        <p className={styles.footerCollege}>
-          Vidyalankar Institute of Technology, Mumbai
-        </p>
+        <p className={styles.footerText}>Explore the village. Enter a house to register.</p>
       </div>
     </div>
   );
