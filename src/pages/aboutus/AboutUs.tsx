@@ -1,15 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./AboutUs.module.scss";
 import Header from "/svgs/aboutus/header.svg";
-import fan from "/svgs/aboutus/fan.png";
-import prev from "/svgs/aboutus/prev.svg";
-import pause from "/svgs/aboutus/pause.svg";
-import next from "/svgs/aboutus/next.svg";
 import Reg from "/svgs/aboutus/reghead.svg";
-import play from "/svgs/aboutus/play.svg";
-import nextarr from "/svgs/aboutus/nextarr.svg";
 import BackButton from "../components/backButton/BackButton";
-import PlayButton from "/svgs/aboutus/borde.svg";
 import aboutPageBG from "/images/aboutus/background.jpg";
 import aboutPageBGMobile from "/images/aboutus/backg.png";
 import letter1 from "/svgs/aboutus/letter1.svg";
@@ -24,7 +17,7 @@ import VideoMetaData from "./components/VideoMetaData";
 // Helmet removed — SEO handled in index.html
 import SocialLinks from "./components/SocialLinks/SocialLinks";
 import AboutText from "./components/AboutText/AboutText";
-import { useYouTubePlayer } from "./components/useYoutubePlayer/useYoutubePlayer";
+import CalligraphyPanel from "./components/CalligraphyPanel/CalligraphyPanel";
 import { useFanAnimation } from "./components/useFanAnimation/useFanAnimation";
 declare global {
   interface Window {
@@ -48,7 +41,7 @@ const icons = [
   letter8,
 ];
 
-const videos = ["V9LHjddKR_M"];
+
 const mainVideoMetadata = {
   id: "V9LHjddKR_M",
   title: "Spectrum Week 2026 | GDG VIT Mumbai",
@@ -67,7 +60,7 @@ const AboutUs = ({ isBackBtn = true }: AboutUsProps) => {
   // const [current, setCurrent] = useState(0);
   // const [isPlaying, setIsPlaying] = useState(false);
   const AboutRef = useRef<HTMLDivElement | null>(null);
-  const playerContainerRef = useRef<HTMLDivElement | null>(null);
+
   // const playerRef = useRef<any>(null);
 
   const fan2Ref = useRef<HTMLImageElement>(null);
@@ -77,8 +70,7 @@ const AboutUs = ({ isBackBtn = true }: AboutUsProps) => {
     window.matchMedia("(max-width: 1200px) and (max-aspect-ratio: 0.75) ")
       .matches
   );
-const { isPlaying, nextVideo, prevVideo, togglePlayPause } = useYouTubePlayer(videos, playerContainerRef);
- useFanAnimation(fan1Ref, fan2Ref, isMobile, iconImages, styles);
+  useFanAnimation(fan1Ref, fan2Ref, isMobile, iconImages, styles);
 
 
   useEffect(() => {
@@ -120,83 +112,7 @@ const { isPlaying, nextVideo, prevVideo, togglePlayPause } = useYouTubePlayer(vi
 
         <div className={styles.content3D}>
           <div className={styles.wrapper}>
-            <button onClick={prevVideo} className={styles.arr}>
-              <img
-                src={nextarr}
-                className={styles.prevarr}
-                width="100%"
-                alt="Next Arrow"
-              ></img>
-            </button>
-            <div className={styles.vid}>
-              <div
-                onClick={togglePlayPause}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  borderRadius: "16px",
-                  zIndex: "20",
-                }}
-              >
-                <div
-                  ref={playerContainerRef}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    borderRadius: "16px",
-                    pointerEvents: "none",
-                  }}
-                />
-              </div>
-
-              <img src={fan} alt="fan1" ref={fan1Ref} className={styles.fan1} />
-              <img src={fan} alt="fan2" ref={fan2Ref} className={styles.fan2} />
-            </div>
-
-            <button onClick={nextVideo} className={styles.arr}>
-              <img
-                src={nextarr}
-                className={styles.nextarr}
-                width="100%"
-                alt="Next Arrow"
-              ></img>
-            </button>
-
-            <div className={styles.controls}>
-              <div className={styles.a1}></div>
-              <div className={styles.buttonContainer}>
-                <img
-                  src={PlayButton}
-                  className={styles.background}
-                  alt="Buttons"
-                />
-                <div className={styles.buttonGroup}>
-                  <button onClick={prevVideo}>
-                    <img
-                      src={prev}
-                      alt="Previous Button"
-                      className={styles.btns1}
-                    />
-                  </button>
-                  <div className={styles.a1}></div>
-                  <button onClick={togglePlayPause}>
-                    <img
-                      src={isPlaying ? play : pause}
-                      alt="Pause Button"
-                      className={styles.btns2}
-                    />
-                  </button>
-                  <div className={styles.a1}></div>
-                  <button onClick={nextVideo}>
-                    <img
-                      src={next}
-                      alt="Next Button"
-                      className={styles.btns3}
-                    />
-                  </button>
-                </div>
-              </div>
-            </div>
+            <CalligraphyPanel />
           </div>
           <AboutText isMobile={isMobile} />
         </div>

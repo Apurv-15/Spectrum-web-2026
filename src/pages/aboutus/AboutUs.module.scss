@@ -50,142 +50,35 @@
     display: flex;
     justify-content: center;
 
-    gap: clamp(10px, 4vw, 100px);
+    gap: clamp(10px, 2.5vw, 60px);
 
     width: 90vw;
     margin: 5vh auto 0vh auto;
-    padding-top: 25vh;
+    padding-top: 20vh;
 
     perspective: 600px;
     perspective-origin: center;
 
     .wrapper {
-      .arr {
-        background: transparent;
-        border: none;
-        display: none;
-
-        .prevarr,
-        .nextarr {
-          display: none;
-        }
-      }
-
       width: 40vw;
+      aspect-ratio: 16 / 9;
       transform-style: preserve-3d;
-
-      .vid {
-        img,
-        iframe,
-        > div {
-          display: block;
-        }
-        width: 100%;
-        // pointer-events: none;
-        aspect-ratio: 16 / 9;
-        border: 0.2vw solid #f2dd7c;
-        box-shadow: 0px 0px 24px 0px #f2dd7c;
-        background: #111111;
-        position: relative;
-
-        transform: rotateY(10deg);
-        transform-style: preserve-3d;
-
+      transform: rotateY(10deg);
+      border-radius: 16px;
+      overflow: visible; // To let the enso/glow spill out naturally
+      
+      // Sacred-shrine background texture (highly transparent)
+      background-color: rgba(10, 9, 8, 0.15);
+      border: none; // Removed border to reduce "box" feel
+      
+      &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.08;
+        background-image: url("https://www.transparenttextures.com/patterns/dark-leather.png");
+        pointer-events: none;
         border-radius: 16px;
-
-        div {
-          border-radius: 16px;
-        }
-
-        .fan1 {
-          z-index: 2;
-          position: absolute;
-          bottom: -7.5vh;
-          left: -4.5vw;
-          width: 10vw;
-          height: auto;
-          object-fit: contain;
-          transform-origin: bottom left;
-        }
-
-        .fan2 {
-          z-index: 2;
-          position: absolute;
-          top: -7vh;
-          right: -5vw;
-          width: 10vw;
-          object-fit: contain;
-          transform-origin: bottom left;
-        }
-      }
-
-      .controls {
-        //  margin-top: 3vh;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        transform: rotateY(10deg);
-        transform-style: preserve-3d;
-
-        .buttonContainer {
-          top: -30px;
-          position: relative;
-          width: 100%;
-          max-width: 273px;
-          aspect-ratio: 273 / 137;
-          //display: flex;
-          // flex-direction: row;
-          transform: rotateZ(5deg) translateZ(20px);
-          transform-style: preserve-3d;
-
-          scale: 0.8;
-
-          // .yellowline{
-          //   background-color: #f2dd7c;
-          //   height: 5vh;
-          //   top:7vh;
-          //   position: absolute;
-          //   width: 6px;
-          // }
-          .background {
-            width: 100%;
-            height: auto;
-            display: block;
-          }
-
-          .buttonGroup {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-evenly;
-            padding: 0 20px;
-            rotate: -5deg;
-
-            .a1 {
-              width: 5px;
-              height: 45%;
-              margin-top: 3px;
-              background-color: #f2dd7c;
-              rotate: 5deg;
-            }
-
-            button {
-              display: inline;
-              background: #111111;
-              border: none;
-              cursor: pointer;
-              padding: 4.5px;
-            }
-
-            img {
-              width: 34px;
-              height: 34px;
-            }
-          }
-        }
       }
     }
 

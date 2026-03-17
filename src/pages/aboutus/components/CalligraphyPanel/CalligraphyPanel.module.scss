@@ -1,0 +1,227 @@
+@use "../../../../assets/global.scss" as *;
+
+// ── Outer container — transparent, fills .wrapper slot ──────────────────────
+.panelContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible; // To let enso glow spill out as requested
+  background: transparent;
+}
+
+// ── Ensō circle ──────────────────────────────────────────────────────────────
+.ensoWrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+.enso {
+  width: 125%; // Larger to fully surround the pillar
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  border: 4px solid rgba(220, 180, 80, 0.28);
+  box-shadow:
+    inset 0 0 60px rgba(220, 180, 80, 0.1),
+    0 0 80px rgba(220, 180, 80, 0.05);
+  opacity: 0.2; // 20% opacity as requested
+  background: conic-gradient(
+    transparent 0deg 45deg,
+    rgba(220, 180, 80, 0.1) 45deg 360deg
+  );
+  filter: blur(1.5px) drop-shadow(0 0 8px rgba(220, 180, 80, 0.15));
+}
+
+// ── Soft lighting glow — pulsating ──────────────────────────────────────────
+.radialGlow {
+  position: absolute;
+  inset: -30%; // Extended reach
+  background: radial-gradient(circle, rgba(220, 180, 80, 0.1) 0%, transparent 70%);
+  z-index: 1;
+  pointer-events: none;
+  filter: blur(70px);
+  animation: lightPulse 12s ease-in-out infinite alternate;
+}
+
+@keyframes lightPulse {
+  from { opacity: 0.4; transform: scale(0.9); }
+  to { opacity: 0.8; transform: scale(1.1); }
+}
+
+// ── Ink particles ─────────────────────────────────────────────────────────────
+.inkParticleLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.inkParticle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(180, 120, 40, 0.6) 0%, transparent 80%);
+  filter: blur(2px);
+  opacity: 0;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+// ── Floating lanterns ────────────────────────────────────────────────────────
+.lanternsLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.lantern {
+  position: absolute;
+  border-radius: 40% 40% 60% 60%;
+  background: radial-gradient(ellipse at center, rgba(220, 165, 60, 0.45) 0%, transparent 70%);
+  filter: blur(15px);
+  mix-blend-mode: screen;
+  opacity: 0.15;
+  will-change: transform;
+  pointer-events: none;
+  animation: lanternFlicker 5s ease-in-out infinite alternate;
+}
+
+@keyframes lanternFlicker {
+  0% { opacity: 0.1; filter: blur(15px) brightness(0.85); transform: translateX(-5px) rotate(-1deg); }
+  50% { opacity: 0.22; filter: blur(17px) brightness(1.15); transform: translateX(5px) rotate(1deg); }
+  100% { opacity: 0.14; filter: blur(14px) brightness(1); transform: translateX(-2px) rotate(0deg); }
+}
+
+// ── Vertical pillar ──────────────────────────────────────────────────────────
+.pillar {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  height: 100%;
+  width: 100%;
+  padding: 8% 8% 6% 15%; // Reduced top padding and shifted slightly to fit viewport height better
+  will-change: transform;
+}
+
+// ── Vertical brush divider through the pillar ───────────────────────────────
+.verticalDivider {
+  position: absolute;
+  top: 5%;
+  bottom: 5%;
+  left: 50%;
+  width: 4px;
+  background: linear-gradient(to bottom, 
+    transparent, 
+    rgba(220, 180, 80, 0.3) 15%, 
+    rgba(220, 180, 80, 0.2) 50%, 
+    rgba(220, 180, 80, 0.3) 85%, 
+    transparent
+  );
+  mask-image: 
+    repeating-linear-gradient(to bottom, black 0px, black 1px, transparent 1px, transparent 2px),
+    linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  mask-composite: intersect;
+  opacity: 0.3;
+  transform: translateX(-50%);
+  filter: blur(1px);
+  z-index: -1;
+}
+
+// ── Value block = jp + en + optional divider ─────────────────────────────────
+.valueBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.valueItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: radial-gradient(circle at center, rgba(13, 12, 11, 0.75) 10%, transparent 70%); // Mask for divider line
+  padding: 8px 30px;
+  position: relative;
+}
+
+// Spark/Tip effect at the edge of the brush stroke reveal
+.brushTip {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(to right, transparent, rgba(240, 224, 176, 0.4), transparent);
+  pointer-events: none;
+  z-index: 10;
+  mix-blend-mode: screen;
+  filter: blur(4px);
+  opacity: 0;
+}
+
+// ── JP Character — brush-stroke revealed via clip-path ───────────────────────
+.jpChar {
+  font-family: "Shippori Mincho", "Noto Serif JP", serif;
+  font-size: clamp(1.6rem, 3.4vw, 3rem); // Slightly smaller to ensure vertical fit
+  color: #f0e0b0; 
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  will-change: clip-path, transform;
+  // Subtle ink glow
+  text-shadow:
+    0 0 30px rgba(220, 180, 60, 0.3),
+    0 0 2px rgba(0, 0, 0, 1),
+    0 4px 12px rgba(0, 0, 0, 0.9);
+}
+
+// ── EN label ─────────────────────────────────────────────────────────────────
+.enLabel {
+  font-family: $primaryFont;
+  font-size: clamp(0.4rem, 0.8vw, 0.7rem);
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: rgba(240, 224, 176, 0.6);
+  margin-top: 6px; // Tighter gap
+  will-change: opacity, transform;
+}
+
+// ── Horizontal Dividers ──────────────────────────────────────────────────────
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 45%;
+  margin: 1% 0; // Much tighter vertical spacing
+  opacity: 0.25;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(220, 180, 80, 0.5), transparent);
+}
+
+.dividerGlyph {
+  font-size: clamp(0.6rem, 1vw, 0.85rem);
+  color: rgba(220, 180, 80, 0.6);
+  line-height: 1;
+  transform: rotate(90deg);
+  display: inline-block;
+}
+
