@@ -24,6 +24,7 @@ export default function Homepage({
   };
   const removeGif = useOverlayStore((state) => state.removeGif);
   const audioRef = useRef<HTMLAudioElement>(null);
+
   const toggleMusic = () => {
     if (!audioRef.current) return;
 
@@ -33,6 +34,7 @@ export default function Homepage({
       audioRef.current.pause();
     }
   };
+
   const playMusic = () => {
     if (audioRef.current) {
       audioRef.current.play();
@@ -56,7 +58,13 @@ export default function Homepage({
           if (el) el.volume = 0.2;
         }}
       />
-      <div style={{ zIndex: 100, position: "relative" }}>
+      <div
+        style={{
+          zIndex: 100,
+          position: "relative",
+          pointerEvents: removeGif ? "auto" : "none",
+        }}
+      >
         <LandingRevamp
           goToPage={goToPage}
           onToggle={toggleMusic}

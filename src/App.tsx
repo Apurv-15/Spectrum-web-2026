@@ -57,7 +57,7 @@ export default function App() {
 
     setTimeout(() => {
       setDoorPhase("opening");
-    }, 500);
+    }, 300);
   };
 
   const handleDoorsOpened = () => {
