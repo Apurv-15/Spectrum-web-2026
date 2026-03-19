@@ -119,7 +119,7 @@ export default function Navbar({
       const colorAnimation = gsap.fromTo(
         document.body,
         {
-          "--navlink-color": "#ffdfd0",
+          "--navlink-color": "#00f7ff",
         },
         {
           scrollTrigger: {
@@ -132,7 +132,7 @@ export default function Navbar({
             // onUpdate: (self) => console.log("Scroll progress:", self.progress),
           },
           //color: "#C0B063",
-          "--navlink-color": "#c0b063",
+          "--navlink-color": "#ff7cde", // Transitions to a vibrant pink/magenta for contrast when scrolled
           ease: "none",
           // markers: "true",
         }

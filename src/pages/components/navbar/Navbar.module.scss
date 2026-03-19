@@ -1,7 +1,7 @@
 @use "../../../assets/global.scss" as *;
 
 body {
-  --navlink-color: #ffdfd0; //will be changed via gsap later
+  --navlink-color: #00f7ff; // Initial high-visibility Luminous Cyan
 }
 
 .nav {
@@ -39,6 +39,7 @@ body {
       rotate: 90deg;
       transition: rotate 0.3s ease-in-out;
       transform-origin: 27px 16px;
+      filter: drop-shadow(0 0 10px #00f7ff); // Added glow for visibility against dark/misty background
     }
     .moonHam {
       width: 50%;
@@ -184,6 +185,7 @@ body {
         align-items: center;
         justify-content: center;
         transition: line-height 0.3s ease-in-out;
+        text-shadow: 0 0 8px rgba(0, 0, 0, 0.4); // Subtle glow/contrast against mist
         .actualLabel {
           filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.25));
           transition: font-size 0.3s ease-in-out, filter 0.3s ease-in-out,
