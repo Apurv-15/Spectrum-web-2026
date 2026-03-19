@@ -26,12 +26,19 @@ export default function mainHam({
 
         element.style.setProperty(
           "mask-image",
-          `url("/videos/dragon-reveal.gif?${timestamp}")`
+          `url("/videos/dragon-reveal.webp?${timestamp}")`
         );
         element.style.setProperty(
           "-webkit-mask-image",
-          `url("/videos/dragon-reveal.gif?${timestamp}")`
+          `url("/videos/dragon-reveal.webp?${timestamp}")`
         );
+
+        // Remove mask after 1.2s to prevent GIF loop while allowing slow draw to continue
+        const timer = setTimeout(() => {
+          element.style.setProperty("mask-image", "none");
+          element.style.setProperty("-webkit-mask-image", "none");
+        }, 1200);
+        return () => clearTimeout(timer);
       } else {
         dragonRef.current.classList.remove(styles.hamOpen);
         dragonRef.current.style.removeProperty("mask-image");
@@ -267,7 +274,7 @@ export default function mainHam({
                 window.open(item.url, "_blank");
               } else {
                 goToPage(item.url);
-                // setMainHamOpen(false);
+                setMainHamOpen(false);
               }
             }}
           >
