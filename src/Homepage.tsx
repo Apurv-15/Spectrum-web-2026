@@ -50,7 +50,7 @@ export default function Homepage({
       <BreadCrumb data={breadcrumbJsonLd} />
       <div
         style={
-          removeGif ? { display: "none" } : { zIndex: 50, position: "relative" }
+          removeGif ? { display: "none" } : { zIndex: 1000, position: "relative" }
         }
       >
         <DrawingPreloader onEnter={playMusic} />
@@ -67,7 +67,7 @@ export default function Homepage({
         style={{
           zIndex: 100,
           position: "relative",
-          pointerEvents: removeGif ? "auto" : "none",
+          pointerEvents: "auto",
         }}
       >
         <LandingRevamp
