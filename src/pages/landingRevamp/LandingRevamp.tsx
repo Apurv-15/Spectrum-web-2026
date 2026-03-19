@@ -15,7 +15,6 @@ const TOTAL_FRAMES = 240;
 const SPRITE_COUNT = 12;
 const FRAMES_PER_SPRITE = 20; // frames per sprite sheet
 const GRID_COLS = 4;
-const GRID_ROWS = 5; // FRAMES_PER_SPRITE / GRID_COLS
 const FRAME_W = 1024;
 const FRAME_H = 576;
 
@@ -100,8 +99,8 @@ export default function LandingRevamp({
 
       if (!isReadyRef.current) return;
 
-      // Lerp toward target — 0.12 gives an Apple-style silky feel
-      currentFrameRef.current = lerp(currentFrameRef.current, targetFrameRef.current, 0.12);
+      // Lerp toward target — 0.08 gives an Apple-style silky feel
+      currentFrameRef.current = lerp(currentFrameRef.current, targetFrameRef.current, 0.08);
 
       const rounded = Math.round(currentFrameRef.current);
       if (rounded !== lastDrawnFrame) {
@@ -138,8 +137,8 @@ export default function LandingRevamp({
         for (let si = 0; si < SPRITE_COUNT; si++) {
           if (cancelled) return;
 
-          // Fetch the sprite PNG as a blob
-          const resp = await fetch(getSpritePath(si + 1));
+          // Fetch with cache policy to hit preloader cache
+          const resp = await fetch(getSpritePath(si + 1), { cache: 'force-cache' });
           if (!resp.ok) throw new Error(`HTTP ${resp.status} for sprite ${si + 1}`);
           const blob = await resp.blob();
           if (cancelled) return;
@@ -157,28 +156,24 @@ export default function LandingRevamp({
               col * FRAME_W,
               row * FRAME_H,
               FRAME_W,
-              FRAME_H
+              FRAME_H,
+              { colorSpaceConversion: 'none' }
             );
             frames.push(bm);
           }
-          sheetBitmap.close(); // release the full sheet — we keep only per-frame bitmaps
+          sheetBitmap.close(); 
 
           bitmapsRef.current[si] = frames;
-
-          // Draw first frame as soon as sprite 0 is ready
-          if (si === 0) {
-            isReadyRef.current = true;
-            targetFrameRef.current = 0;
-            currentFrameRef.current = 0;
-          }
-
           console.log(`LandingRevamp: bitmap sprite ${si + 1}/${SPRITE_COUNT} ready`);
         }
 
         if (!cancelled) {
           console.log("LandingRevamp: ALL BITMAPS READY");
+          isReadyRef.current = true; // Set ready only after ALL are decoded
           setAllLoaded(true);
           setLandingReady(true);
+          // Initial draw
+          drawFrame(0);
         }
       } catch (err) {
         console.error("LandingRevamp: bitmap load error", err);
@@ -335,7 +330,7 @@ export default function LandingRevamp({
   // ─── JSX ──────────────────────────────────────────────────────────────────
   return (
     <div
-      className={`${styles.wrapper} ${!removeGif ? styles.pointerNoneEvent : ""} ${overlayIsActive ? styles.mask : ""}`}
+      className={`${styles.wrapper} ${!removeGif ? styles.pointerNoneEvent : ""} ${overlayIsActive && !removeGif ? styles.mask : ""}`}
       style={{
         maskImage: removeGif ? "none" : undefined,
         WebkitMaskImage: removeGif ? "none" : undefined,
