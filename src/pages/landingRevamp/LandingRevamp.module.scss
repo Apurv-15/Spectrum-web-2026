@@ -208,3 +208,67 @@ body {
     transform: scaleY(1.5);
   }
 }
+
+.scrollIndicator {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 100;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  pointer-events: none;
+
+  .mouse {
+    width: 24px;
+    height: 40px;
+    border: 2px solid rgba(255, 234, 0, 0.6);
+    border-radius: 12px;
+    position: relative;
+
+    .wheel {
+      width: 4px;
+      height: 8px;
+      background: #ffea00;
+      border-radius: 2px;
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: scrollWheel 2s infinite;
+      box-shadow: 0 0 10px rgba(255, 234, 0, 0.8);
+    }
+  }
+
+  .scrollText {
+    font-size: 10px;
+    color: #ffea00;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+  }
+
+  &.hidden {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+}
+
+@keyframes scrollWheel {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, 4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 15px);
+  }
+}

@@ -34,6 +34,7 @@ export default function LandingRevamp({
   const frameRef = useRef<number>(FRAME_START);
   const lenisRef = useRef<Lenis | null>(null);
   const [imagesLoaded, setImagesLoaded] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
 
 
   const isMainHamOpen = useMainHamStore((state) => state.isMainHamOpen);
@@ -103,6 +104,12 @@ export default function LandingRevamp({
       FRAME_COUNT,
       Math.max(FRAME_START, Math.round(scrollFraction * (FRAME_COUNT - FRAME_START)) + FRAME_START)
     );
+
+    if (scrollFraction > 0.05 && scrollFraction < 0.95) {
+      setIsScrolled(true);
+    } else {
+      setIsScrolled(false);
+    }
 
     if (frameRef.current !== frameIndex) {
       frameRef.current = frameIndex;
@@ -323,6 +330,13 @@ export default function LandingRevamp({
           <span className={styleTag[0]}></span>
           <span className={styleTag[0]}></span>
           <span className={styleTag[0]}></span>
+        </div>
+
+        <div className={`${styles.scrollIndicator} ${isScrolled || !removeGif ? styles.hidden : ""}`}>
+          <div className={styles.mouse}>
+            <div className={styles.wheel}></div>
+          </div>
+          <span className={styles.scrollText}>Scroll Down</span>
         </div>
       </div>
 
