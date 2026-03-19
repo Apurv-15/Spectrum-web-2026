@@ -1,17 +1,21 @@
 import { create } from "zustand";
 
-type overlayActive ={
-    isActive: boolean;
-    removeGif: boolean;
-    setActive: () => void;
-    setRemoveGif: () => void;
-}
+type overlayActive = {
+  isActive: boolean;
+  removeGif: boolean;
+  isLandingReady: boolean;
+  setActive: () => void;
+  setRemoveGif: () => void;
+  setLandingReady: (ready: boolean) => void;
+};
 
 const useOverlayStore = create<overlayActive>((set) => ({
-    isActive: false,
-    removeGif: false,
-    setActive: () => set({ isActive: true }),
-    setRemoveGif: () => set({ removeGif: true })
+  isActive: false,
+  removeGif: false,
+  isLandingReady: false,
+  setActive: () => set({ isActive: true }),
+  setRemoveGif: () => set({ removeGif: true }),
+  setLandingReady: (ready) => set({ isLandingReady: ready }),
 }));
 
 export default useOverlayStore;

@@ -135,7 +135,7 @@ export default function DrawingPreloader({
           const len = parseFloat(el.getAttribute("stroke-dasharray") || "200");
           el.setAttribute("stroke-dashoffset", (len * (1 - pathProg)).toString());
           (el as HTMLElement).style.transition = "stroke-dashoffset 1s ease-out";
-        } catch (e) {}
+        } catch (e) { }
       }
     }
   }, [progress]);
@@ -162,9 +162,11 @@ export default function DrawingPreloader({
         img.src = src;
         img.onload = () => {
           imagesLoaded++;
+          console.log(`Preloader: Image loaded (${imagesLoaded}/${totalAssets})`);
         };
         img.onerror = () => {
           imagesLoaded++; // Still count as progress to avoid getting stuck
+          console.warn(`Preloader: Image failed (${imagesLoaded}/${totalAssets})`);
         };
       });
 
@@ -185,18 +187,26 @@ export default function DrawingPreloader({
       // Blend simulation with real loading (if any assets)
       const increment = Math.random() * 2 + 0.5;
       simulatedProgress = Math.min(simulatedProgress + increment, 99);
-      
-      const realProgress = totalAssets > 0 ? (imagesLoaded / totalAssets) * 100 : 100;
-      
+
+      const realProgress =
+        totalAssets > 0 ? (imagesLoaded / totalAssets) * 100 : 100;
+
       // Use the minimum of simulated and real to ensure we don't finish before assets are ready
-      // but also don't stay at 0% if no assets
-      const displayProgress = totalAssets > 0 
-        ? Math.min(simulatedProgress, realProgress)
-        : simulatedProgress;
+      const displayProgress =
+        totalAssets > 0
+          ? Math.min(simulatedProgress, realProgress)
+          : simulatedProgress;
 
       setProgress(displayProgress);
 
-      if (simulatedProgress >= 99 && (totalAssets === 0 || imagesLoaded >= totalAssets)) {
+      // Check live state of the store to avoid stale closure
+      const currentLandingReady = useOverlayStore.getState().isLandingReady;
+
+      if (
+        simulatedProgress >= 99 &&
+        (totalAssets === 0 || imagesLoaded >= totalAssets) &&
+        currentLandingReady
+      ) {
         clearInterval(interval);
         setTimeout(() => {
           setProgress(100);
@@ -529,230 +539,230 @@ export default function DrawingPreloader({
             <svg viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
               {/* CLOUDS */}
               <path className="draw-path" id="p1" strokeWidth="1.8"
-                d="M 0,180 C 40,160 80,140 130,155 C 160,162 175,145 210,140 C 250,134 270,150 300,148 C 330,146 350,130 380,135 C 410,140 420,155 440,150"/>
+                d="M 0,180 C 40,160 80,140 130,155 C 160,162 175,145 210,140 C 250,134 270,150 300,148 C 330,146 350,130 380,135 C 410,140 420,155 440,150" />
               <path className="draw-path" id="p2" strokeWidth="1.2"
-                d="M 20,200 C 60,185 100,170 150,178 C 185,183 200,168 230,162 C 265,155 285,172 315,168 C 345,164 365,148 395,155 C 425,162 435,175 455,168"/>
+                d="M 20,200 C 60,185 100,170 150,178 C 185,183 200,168 230,162 C 265,155 285,172 315,168 C 345,164 365,148 395,155 C 425,162 435,175 455,168" />
               <path className="draw-path" id="p3" strokeWidth="2"
-                d="M 0,220 C 30,195 70,178 110,185 C 145,191 165,172 200,165 C 240,158 265,178 300,172 C 340,165 365,148 400,155 C 435,162 450,180 480,172"/>
+                d="M 0,220 C 30,195 70,178 110,185 C 145,191 165,172 200,165 C 240,158 265,178 300,172 C 340,165 365,148 400,155 C 435,162 450,180 480,172" />
               <path className="draw-path" id="p4" strokeWidth="1.5"
-                d="M 50,130 C 80,110 120,95 160,105 C 190,112 200,90 230,82 C 265,73 290,95 310,88 C 335,80 345,60 375,68"/>
+                d="M 50,130 C 80,110 120,95 160,105 C 190,112 200,90 230,82 C 265,73 290,95 310,88 C 335,80 345,60 375,68" />
               <path className="draw-path" id="p5" strokeWidth="1.2"
-                d="M 60,148 C 95,128 135,112 175,122 C 205,130 215,108 245,100 C 280,91 305,113 325,106 C 350,98 360,78 390,86"/>
+                d="M 60,148 C 95,128 135,112 175,122 C 205,130 215,108 245,100 C 280,91 305,113 325,106 C 350,98 360,78 390,86" />
 
               {/* Gold clouds */}
               <path className="gold-path" id="p6" strokeWidth="2.5"
-                d="M 900,60 C 950,40 1020,30 1080,50 C 1120,63 1150,45 1190,42 C 1230,39 1265,55 1300,52 C 1350,48 1380,35 1420,40"/>
+                d="M 900,60 C 950,40 1020,30 1080,50 C 1120,63 1150,45 1190,42 C 1230,39 1265,55 1300,52 C 1350,48 1380,35 1420,40" />
               <path className="gold-path" id="p7" strokeWidth="1.8"
-                d="M 920,85 C 975,62 1045,52 1105,72 C 1145,85 1175,67 1215,64 C 1255,61 1285,78 1325,75 C 1370,72 1395,58 1430,63"/>
+                d="M 920,85 C 975,62 1045,52 1105,72 C 1145,85 1175,67 1215,64 C 1255,61 1285,78 1325,75 C 1370,72 1395,58 1430,63" />
               <path className="gold-path" id="p8" strokeWidth="3"
-                d="M 880,110 C 940,88 1015,78 1075,98 C 1115,111 1145,93 1185,90 C 1225,87 1255,104 1295,101 C 1340,98 1370,84 1410,89"/>
+                d="M 880,110 C 940,88 1015,78 1075,98 C 1115,111 1145,93 1185,90 C 1225,87 1255,104 1295,101 C 1340,98 1370,84 1410,89" />
               <path className="gold-path" id="p9" strokeWidth="2"
-                d="M 1100,40 C 1130,20 1170,15 1200,30 C 1230,45 1220,70 1195,80 C 1170,90 1145,75 1150,55 C 1155,35 1180,28 1200,38"/>
+                d="M 1100,40 C 1130,20 1170,15 1200,30 C 1230,45 1220,70 1195,80 C 1170,90 1145,75 1150,55 C 1155,35 1180,28 1200,38" />
               <path className="gold-path" id="p10" strokeWidth="1.5"
-                d="M 1050,70 C 1080,45 1130,38 1165,55 C 1195,70 1190,100 1162,110 C 1135,120 1108,102 1115,82 C 1122,62 1150,55 1168,68"/>
+                d="M 1050,70 C 1080,45 1130,38 1165,55 C 1195,70 1190,100 1162,110 C 1135,120 1108,102 1115,82 C 1122,62 1150,55 1168,68" />
               <path className="gold-path" id="p11" strokeWidth="1.2"
-                d="M 1180,20 C 1220,5 1270,8 1300,28 C 1330,48 1315,80 1285,88 C 1255,96 1228,75 1238,52 C 1248,29 1280,22 1302,38"/>
+                d="M 1180,20 C 1220,5 1270,8 1300,28 C 1330,48 1315,80 1285,88 C 1255,96 1228,75 1238,52 C 1248,29 1280,22 1302,38" />
 
               {/* MOUNTAINS */}
               <path className="draw-path" id="p12" strokeWidth="1.5"
-                d="M 600,650 L 680,450 L 760,650"/>
+                d="M 600,650 L 680,450 L 760,650" />
               <path className="draw-path" id="p13" strokeWidth="1"
-                d="M 550,700 L 640,520 L 700,650"/>
+                d="M 550,700 L 640,520 L 700,650" />
               <path className="draw-path" id="p14" strokeWidth="1.2"
-                d="M 700,680 L 790,480 L 870,680"/>
+                d="M 700,680 L 790,480 L 870,680" />
               <path className="draw-path" id="p15" strokeWidth="0.7"
-                d="M 680,450 C 690,480 695,510 700,540 C 705,570 708,600 710,630"/>
+                d="M 680,450 C 690,480 695,510 700,540 C 705,570 708,600 710,630" />
               <path className="draw-path" id="p16" strokeWidth="0.7"
-                d="M 680,450 C 670,480 665,510 660,540 C 655,570 652,600 650,630"/>
+                d="M 680,450 C 670,480 665,510 660,540 C 655,570 652,600 650,630" />
               <path className="draw-path" id="p17" strokeWidth="0.8"
-                d="M 400,700 C 450,620 520,560 600,550 C 680,540 750,580 820,600 C 890,620 950,580 1020,560 C 1090,540 1160,590 1220,650 C 1280,710 1350,750 1400,770"/>
+                d="M 400,700 C 450,620 520,560 600,550 C 680,540 750,580 820,600 C 890,620 950,580 1020,560 C 1090,540 1160,590 1220,650 C 1280,710 1350,750 1400,770" />
               <path className="draw-path" id="p18" strokeWidth="0.6"
-                d="M 300,750 C 380,680 470,630 560,620 C 650,610 730,650 810,670 C 890,690 960,650 1040,635 C 1120,620 1200,670 1270,730"/>
+                d="M 300,750 C 380,680 470,630 560,620 C 650,610 730,650 810,670 C 890,690 960,650 1040,635 C 1120,620 1200,670 1270,730" />
 
               {/* PAGODA */}
               <path className="draw-path" id="p19" strokeWidth="2"
-                d="M 230,680 L 400,680"/>
+                d="M 230,680 L 400,680" />
               <path className="draw-path" id="p20" strokeWidth="1.5"
-                d="M 240,672 L 390,672"/>
+                d="M 240,672 L 390,672" />
               <path className="draw-path" id="p21" strokeWidth="2"
-                d="M 270,672 L 270,640 L 360,640 L 360,672"/>
+                d="M 270,672 L 270,640 L 360,640 L 360,672" />
               <path className="draw-path" id="p22" strokeWidth="1.5"
-                d="M 275,640 L 275,610 L 355,610 L 355,640"/>
+                d="M 275,640 L 275,610 L 355,610 L 355,640" />
               <path className="draw-path" id="p23" strokeWidth="2.2"
-                d="M 250,640 C 270,630 315,625 315,625 C 315,625 360,630 380,640"/>
+                d="M 250,640 C 270,630 315,625 315,625 C 315,625 360,630 380,640" />
               <path className="draw-path" id="p24" strokeWidth="1.5"
-                d="M 248,642 C 268,636 315,631 315,631 C 315,631 362,636 382,642"/>
+                d="M 248,642 C 268,636 315,631 315,631 C 315,631 362,636 382,642" />
               <path className="draw-path" id="p25" strokeWidth="1.8"
-                d="M 250,640 C 240,638 232,632 228,625"/>
+                d="M 250,640 C 240,638 232,632 228,625" />
               <path className="draw-path" id="p26" strokeWidth="1.8"
-                d="M 380,640 C 390,638 398,632 402,625"/>
+                d="M 380,640 C 390,638 398,632 402,625" />
               <path className="draw-path" id="p27" strokeWidth="1.8"
-                d="M 285,610 L 285,580 L 345,580 L 345,610"/>
+                d="M 285,610 L 285,580 L 345,580 L 345,610" />
               <path className="draw-path" id="p28" strokeWidth="1.5"
-                d="M 288,580 L 288,552 L 342,552 L 342,580"/>
+                d="M 288,580 L 288,552 L 342,552 L 342,580" />
               <path className="draw-path" id="p29" strokeWidth="2"
-                d="M 262,580 C 285,570 315,566 315,566 C 315,566 345,570 368,580"/>
+                d="M 262,580 C 285,570 315,566 315,566 C 315,566 345,570 368,580" />
               <path className="draw-path" id="p30" strokeWidth="1.2"
-                d="M 260,582 C 283,575 315,571 315,571 C 315,571 347,575 370,582"/>
+                d="M 260,582 C 283,575 315,571 315,571 C 315,571 347,575 370,582" />
               <path className="draw-path" id="p31" strokeWidth="1.5"
-                d="M 262,580 C 252,578 244,572 240,565"/>
+                d="M 262,580 C 252,578 244,572 240,565" />
               <path className="draw-path" id="p32" strokeWidth="1.5"
-                d="M 368,580 C 378,578 386,572 390,565"/>
+                d="M 368,580 C 378,578 386,572 390,565" />
               <path className="draw-path" id="p33" strokeWidth="1.5"
-                d="M 298,552 L 298,525 L 332,525 L 332,552"/>
+                d="M 298,552 L 298,525 L 332,525 L 332,552" />
               <path className="draw-path" id="p34" strokeWidth="1.2"
-                d="M 300,525 L 300,500 L 330,500 L 330,525"/>
+                d="M 300,525 L 300,500 L 330,500 L 330,525" />
               <path className="draw-path" id="p35" strokeWidth="1.8"
-                d="M 278,525 C 298,516 315,513 315,513 C 315,513 332,516 352,525"/>
+                d="M 278,525 C 298,516 315,513 315,513 C 315,513 332,516 352,525" />
               <path className="draw-path" id="p36" strokeWidth="1"
-                d="M 276,527 C 296,520 315,517 315,517 C 315,517 334,520 354,527"/>
+                d="M 276,527 C 296,520 315,517 315,517 C 315,517 334,520 354,527" />
               <path className="draw-path" id="p37" strokeWidth="1.2"
-                d="M 278,525 C 268,523 260,517 256,510"/>
+                d="M 278,525 C 268,523 260,517 256,510" />
               <path className="draw-path" id="p38" strokeWidth="1.2"
-                d="M 352,525 C 362,523 370,517 374,510"/>
+                d="M 352,525 C 362,523 370,517 374,510" />
               <path className="draw-path" id="p39" strokeWidth="1.5"
-                d="M 308,500 L 308,480 L 322,480 L 322,500"/>
+                d="M 308,500 L 308,480 L 322,480 L 322,500" />
               <path className="draw-path" id="p40" strokeWidth="1.2"
-                d="M 315,480 L 315,455 M 310,468 L 315,455 L 320,468"/>
+                d="M 315,480 L 315,455 M 310,468 L 315,455 L 320,468" />
               <path className="draw-path" id="p41" strokeWidth="1"
-                d="M 311,475 C 313,473 317,473 319,475"/>
+                d="M 311,475 C 313,473 317,473 319,475" />
               <path className="draw-path" id="p42" strokeWidth="1"
-                d="M 311,470 C 313,468 317,468 319,470"/>
+                d="M 311,470 C 313,468 317,468 319,470" />
               <path className="draw-path" id="p43" strokeWidth="1"
-                d="M 311,465 C 313,463 317,463 319,465"/>
+                d="M 311,465 C 313,463 317,463 319,465" />
               <path className="draw-path" id="p44" strokeWidth="1"
-                d="M 311,460 C 313,458 317,458 319,460"/>
+                d="M 311,460 C 313,458 317,458 319,460" />
               <path className="draw-path" id="p45" strokeWidth="0.8"
-                d="M 295,655 L 295,645 L 305,645 L 305,655 Z"/>
+                d="M 295,655 L 295,645 L 305,645 L 305,655 Z" />
               <path className="draw-path" id="p46" strokeWidth="0.8"
-                d="M 325,655 L 325,645 L 335,645 L 335,655 Z"/>
+                d="M 325,655 L 325,645 L 335,645 L 335,655 Z" />
               <path className="draw-path" id="p47" strokeWidth="0.8"
-                d="M 303,625 L 303,615 L 310,615 L 310,625 Z M 320,625 L 320,615 L 327,615 L 327,625 Z"/>
+                d="M 303,625 L 303,615 L 310,615 L 310,625 Z M 320,625 L 320,615 L 327,615 L 327,625 Z" />
 
               {/* PINE TREES */}
               <path className="draw-path" id="p48" strokeWidth="1.5"
-                d="M 200,680 L 200,620 M 185,650 L 200,620 L 215,650 M 180,665 L 200,635 L 220,665"/>
+                d="M 200,680 L 200,620 M 185,650 L 200,620 L 215,650 M 180,665 L 200,635 L 220,665" />
               <path className="draw-path" id="p49" strokeWidth="1.2"
-                d="M 175,680 L 175,630 M 162,658 L 175,630 L 188,658 M 158,672 L 175,645 L 192,672"/>
+                d="M 175,680 L 175,630 M 162,658 L 175,630 L 188,658 M 158,672 L 175,645 L 192,672" />
               <path className="draw-path" id="p50" strokeWidth="1.5"
-                d="M 420,680 L 420,625 M 405,652 L 420,625 L 435,652 M 400,668 L 420,638 L 440,668"/>
+                d="M 420,680 L 420,625 M 405,652 L 420,625 L 435,652 M 400,668 L 420,638 L 440,668" />
 
               {/* MIST */}
               <path className="draw-path" id="p51" strokeWidth="0.8"
-                d="M 150,685 C 200,678 280,675 350,678 C 420,681 470,688 500,685"/>
+                d="M 150,685 C 200,678 280,675 350,678 C 420,681 470,688 500,685" />
               <path className="draw-path" id="p52" strokeWidth="0.6"
-                d="M 160,692 C 215,685 295,682 365,685 C 435,688 480,694 510,692"/>
+                d="M 160,692 C 215,685 295,682 365,685 C 435,688 480,694 510,692" />
 
               {/* SAMURAI */}
               <path className="draw-path" id="p53" strokeWidth="2"
-                d="M 980,780 C 1010,765 1060,758 1100,762 C 1140,766 1160,780 1180,785"/>
+                d="M 980,780 C 1010,765 1060,758 1100,762 C 1140,766 1160,780 1180,785" />
               <path className="draw-path" id="p54" strokeWidth="1.5"
-                d="M 990,790 C 1025,778 1070,772 1110,775 C 1145,778 1165,790 1185,795"/>
+                d="M 990,790 C 1025,778 1070,772 1110,775 C 1145,778 1165,790 1185,795" />
               <path className="draw-path" id="p55" strokeWidth="2.5"
-                d="M 1055,762 C 1048,740 1042,710 1038,680 C 1034,660 1033,640 1035,625"/>
+                d="M 1055,762 C 1048,740 1042,710 1038,680 C 1034,660 1033,640 1035,625" />
               <path className="draw-path" id="p56" strokeWidth="2.5"
-                d="M 1078,762 C 1085,740 1090,710 1092,680 C 1094,660 1094,640 1092,625"/>
+                d="M 1078,762 C 1085,740 1090,710 1092,680 C 1094,660 1094,640 1092,625" />
               <path className="draw-path" id="p57" strokeWidth="2"
-                d="M 1035,625 C 1040,618 1060,615 1067,620"/>
+                d="M 1035,625 C 1040,618 1060,615 1067,620" />
               <path className="draw-path" id="p58" strokeWidth="1.5"
-                d="M 1040,680 C 1050,675 1070,674 1080,678 L 1092,680"/>
+                d="M 1040,680 C 1050,675 1070,674 1080,678 L 1092,680" />
               <path className="draw-path" id="p59" strokeWidth="0.8"
-                d="M 1045,710 C 1050,700 1055,690 1057,675"/>
+                d="M 1045,710 C 1050,700 1055,690 1057,675" />
               <path className="draw-path" id="p60" strokeWidth="0.8"
-                d="M 1075,710 C 1072,700 1070,690 1068,675"/>
+                d="M 1075,710 C 1072,700 1070,690 1068,675" />
               <path className="draw-path" id="p61" strokeWidth="0.8"
-                d="M 1062,725 C 1065,715 1067,700 1065,685"/>
+                d="M 1062,725 C 1065,715 1067,700 1065,685" />
               <path className="draw-path" id="p62" strokeWidth="2.5"
-                d="M 1035,625 C 1028,600 1025,575 1027,550 C 1029,535 1035,525 1045,520"/>
+                d="M 1035,625 C 1028,600 1025,575 1027,550 C 1029,535 1035,525 1045,520" />
               <path className="draw-path" id="p63" strokeWidth="2.5"
-                d="M 1092,625 C 1099,600 1102,575 1100,550 C 1098,535 1092,525 1082,520"/>
+                d="M 1092,625 C 1099,600 1102,575 1100,550 C 1098,535 1092,525 1082,520" />
               <path className="draw-path" id="p64" strokeWidth="1.8"
-                d="M 1045,520 C 1055,512 1063,510 1067,515 C 1071,520 1063,530 1063,540 L 1063,625"/>
+                d="M 1045,520 C 1055,512 1063,510 1067,515 C 1071,520 1063,530 1063,540 L 1063,625" />
               <path className="draw-path" id="p65" strokeWidth="1.8"
-                d="M 1082,520 C 1072,512 1064,510 1067,515"/>
+                d="M 1082,520 C 1072,512 1064,510 1067,515" />
               <path className="draw-path" id="p66" strokeWidth="2"
-                d="M 1032,608 C 1050,603 1080,601 1098,606"/>
+                d="M 1032,608 C 1050,603 1080,601 1098,606" />
               <path className="draw-path" id="p67" strokeWidth="2.5"
-                d="M 1030,615 C 1050,610 1082,608 1100,614"/>
+                d="M 1030,615 C 1050,610 1082,608 1100,614" />
               <path className="draw-path" id="p68" strokeWidth="2"
-                d="M 1032,622 C 1050,617 1080,615 1098,620"/>
+                d="M 1032,622 C 1050,617 1080,615 1098,620" />
               <path className="draw-path" id="p69" strokeWidth="2.2"
-                d="M 1027,560 C 1010,555 995,548 980,535 C 970,526 965,515 970,505"/>
+                d="M 1027,560 C 1010,555 995,548 980,535 C 970,526 965,515 970,505" />
               <path className="draw-path" id="p70" strokeWidth="2"
-                d="M 1030,572 C 1012,568 998,562 982,550 C 972,541 967,530 972,520"/>
+                d="M 1030,572 C 1012,568 998,562 982,550 C 972,541 967,530 972,520" />
               <path className="draw-path" id="p71" strokeWidth="0.8"
-                d="M 1015,560 C 1010,552 1000,543 993,538"/>
+                d="M 1015,560 C 1010,552 1000,543 993,538" />
               <path className="draw-path" id="p72" strokeWidth="0.8"
-                d="M 1020,567 C 1014,558 1005,549 997,543"/>
+                d="M 1020,567 C 1014,558 1005,549 997,543" />
               <path className="draw-path" id="p73" strokeWidth="1.5"
-                d="M 970,505 C 968,498 969,490 975,485 C 980,480 987,480 990,487 C 993,494 990,502 984,506"/>
+                d="M 970,505 C 968,498 969,490 975,485 C 980,480 987,480 990,487 C 993,494 990,502 984,506" />
               <path className="draw-path" id="p74" strokeWidth="3"
-                d="M 975,485 C 1000,470 1040,450 1080,435 C 1120,420 1160,410 1200,405"/>
+                d="M 975,485 C 1000,470 1040,450 1080,435 C 1120,420 1160,410 1200,405" />
               <path className="draw-path" id="p75" strokeWidth="1.2"
-                d="M 975,490 C 1002,476 1042,456 1082,441 C 1122,426 1162,416 1202,411"/>
+                d="M 975,490 C 1002,476 1042,456 1082,441 C 1122,426 1162,416 1202,411" />
               <path className="draw-path" id="p76" strokeWidth="2"
-                d="M 978,488 C 976,483 977,478 982,476 C 987,474 992,477 992,482 C 992,487 988,490 983,490 Z"/>
+                d="M 978,488 C 976,483 977,478 982,476 C 987,474 992,477 992,482 C 992,487 988,490 983,490 Z" />
               <path className="draw-path" id="p77" strokeWidth="2"
-                d="M 1200,405 C 1215,402 1228,403 1235,407 L 1202,411"/>
+                d="M 1200,405 C 1215,402 1228,403 1235,407 L 1202,411" />
               <path className="draw-path" id="p78" strokeWidth="2"
-                d="M 1100,555 C 1112,548 1118,538 1115,525"/>
+                d="M 1100,555 C 1112,548 1118,538 1115,525" />
               <path className="draw-path" id="p79" strokeWidth="1.5"
-                d="M 1102,565 C 1115,558 1122,547 1118,534"/>
+                d="M 1102,565 C 1115,558 1122,547 1118,534" />
               <path className="draw-path" id="p80" strokeWidth="2"
-                d="M 1052,520 C 1055,510 1060,505 1063,500 C 1066,495 1068,510 1072,520"/>
+                d="M 1052,520 C 1055,510 1060,505 1063,500 C 1066,495 1068,510 1072,520" />
               <path className="draw-path" id="p81" strokeWidth="2"
-                d="M 1052,500 C 1048,488 1050,475 1060,468 C 1070,461 1082,463 1086,474 C 1090,485 1087,498 1080,504"/>
+                d="M 1052,500 C 1048,488 1050,475 1060,468 C 1070,461 1082,463 1086,474 C 1090,485 1087,498 1080,504" />
               <path className="draw-path" id="p82" strokeWidth="1"
-                d="M 1058,482 C 1062,479 1066,479 1068,482"/>
+                d="M 1058,482 C 1062,479 1066,479 1068,482" />
               <path className="draw-path" id="p83" strokeWidth="1.8"
-                d="M 1060,468 C 1062,458 1068,450 1075,445 C 1082,440 1090,442 1095,448"/>
+                d="M 1060,468 C 1062,458 1068,450 1075,445 C 1082,440 1090,442 1095,448" />
               <path className="draw-path" id="p84" strokeWidth="1.2"
-                d="M 1086,474 C 1098,468 1112,460 1125,452 C 1138,444 1148,436 1155,428"/>
+                d="M 1086,474 C 1098,468 1112,460 1125,452 C 1138,444 1148,436 1155,428" />
               <path className="draw-path" id="p85" strokeWidth="0.8"
-                d="M 1090,480 C 1102,475 1116,468 1128,460 C 1140,452 1150,444 1158,436"/>
+                d="M 1090,480 C 1102,475 1116,468 1128,460 C 1140,452 1150,444 1158,436" />
 
               {/* FOREGROUND ROCKS */}
               <path className="draw-path" id="p86" strokeWidth="2.5"
-                d="M 900,900 C 920,850 940,800 960,770 C 975,745 995,730 1020,725 C 1045,720 1065,728 1085,740 C 1100,750 1110,768 1120,790 C 1135,820 1145,860 1150,900"/>
+                d="M 900,900 C 920,850 940,800 960,770 C 975,745 995,730 1020,725 C 1045,720 1065,728 1085,740 C 1100,750 1110,768 1120,790 C 1135,820 1145,860 1150,900" />
               <path className="draw-path" id="p87" strokeWidth="0.8"
-                d="M 930,850 C 945,835 960,820 975,810"/>
+                d="M 930,850 C 945,835 960,820 975,810" />
               <path className="draw-path" id="p88" strokeWidth="0.8"
-                d="M 920,875 C 938,858 958,840 975,830"/>
+                d="M 920,875 C 938,858 958,840 975,830" />
               <path className="draw-path" id="p89" strokeWidth="0.8"
-                d="M 1120,820 C 1110,810 1100,800 1092,790"/>
+                d="M 1120,820 C 1110,810 1100,800 1092,790" />
               <path className="draw-path" id="p90" strokeWidth="0.8"
-                d="M 1135,860 C 1122,848 1112,836 1104,825"/>
+                d="M 1135,860 C 1122,848 1112,836 1104,825" />
               <path className="draw-path" id="p91" strokeWidth="1.5"
-                d="M 820,880 C 830,865 850,858 870,862 C 890,866 900,880 895,895"/>
+                d="M 820,880 C 830,865 850,858 870,862 C 890,866 900,880 895,895" />
               <path className="draw-path" id="p92" strokeWidth="1.2"
-                d="M 1170,870 C 1180,856 1198,850 1215,854 C 1232,858 1240,872 1235,885"/>
+                d="M 1170,870 C 1180,856 1198,850 1215,854 C 1232,858 1240,872 1235,885" />
 
               {/* GROUND MIST */}
               <path className="draw-path" id="p93" strokeWidth="0.6"
-                d="M 0,800 C 100,790 250,785 400,790 C 550,795 700,800 850,795 C 1000,790 1150,782 1300,788 C 1380,791 1430,796 1460,800"/>
+                d="M 0,800 C 100,790 250,785 400,790 C 550,795 700,800 850,795 C 1000,790 1150,782 1300,788 C 1380,791 1430,796 1460,800" />
               <path className="draw-path" id="p94" strokeWidth="0.5"
-                d="M 0,820 C 120,812 280,807 440,812 C 600,817 760,823 920,818 C 1080,813 1240,806 1400,812"/>
+                d="M 0,820 C 120,812 280,807 440,812 C 600,817 760,823 920,818 C 1080,813 1240,806 1400,812" />
               <path className="draw-path" id="p95" strokeWidth="0.4"
-                d="M 0,840 C 150,833 350,828 550,833 C 750,838 950,844 1150,839 C 1300,835 1400,830 1470,836"/>
+                d="M 0,840 C 150,833 350,828 550,833 C 750,838 950,844 1150,839 C 1300,835 1400,830 1470,836" />
 
               {/* Decorative elements */}
-              <circle id="p96" cx="500" cy="200" r="2" fill="#1a1410" stroke="none"/>
-              <circle id="p97" cx="508" cy="190" r="1.2" fill="#1a1410" stroke="none"/>
-              <circle id="p98" cx="492" cy="195" r="1.5" fill="#1a1410" stroke="none"/>
+              <circle id="p96" cx="500" cy="200" r="2" fill="#1a1410" stroke="none" />
+              <circle id="p97" cx="508" cy="190" r="1.2" fill="#1a1410" stroke="none" />
+              <circle id="p98" cx="492" cy="195" r="1.5" fill="#1a1410" stroke="none" />
 
               {/* Moon circle */}
               <path className="gold-path" id="p99" strokeWidth="1.5"
-                d="M 700,150 C 700,80 760,30 820,30 C 880,30 940,80 940,150 C 940,220 880,270 820,270 C 760,270 700,220 700,150 Z"/>
+                d="M 700,150 C 700,80 760,30 820,30 C 880,30 940,80 940,150 C 940,220 880,270 820,270 C 760,270 700,220 700,150 Z" />
               <path className="gold-path" id="p100" strokeWidth="0.8"
-                d="M 720,150 C 720,92 768,48 820,48 C 872,48 920,92 920,150 C 920,208 872,252 820,252 C 768,252 720,208 720,150 Z" opacity="0.5"/>
+                d="M 720,150 C 720,92 768,48 820,48 C 872,48 920,92 920,150 C 920,208 872,252 820,252 C 768,252 720,208 720,150 Z" opacity="0.5" />
 
               {/* Flying birds */}
               <path className="draw-path" id="p101" strokeWidth="1"
-                d="M 650,120 C 658,112 668,112 676,120"/>
+                d="M 650,120 C 658,112 668,112 676,120" />
               <path className="draw-path" id="p102" strokeWidth="1"
-                d="M 620,135 C 628,127 638,127 646,135"/>
+                d="M 620,135 C 628,127 638,127 646,135" />
               <path className="draw-path" id="p103" strokeWidth="0.8"
-                d="M 680,105 C 687,98 695,98 702,105"/>
+                d="M 680,105 C 687,98 695,98 702,105" />
             </svg>
           </div>
 
@@ -767,8 +777,8 @@ export default function DrawingPreloader({
 
             <div className={`progress-ring-wrap ${showEnterButton ? "hidden" : ""}`}>
               <svg className="progress-ring" width="52" height="52" viewBox="0 0 52 52">
-                <circle className="progress-track" cx="26" cy="26" r="22"/>
-                <circle className="progress-fill" ref={circleRef} cx="26" cy="26" r="22"/>
+                <circle className="progress-track" cx="26" cy="26" r="22" />
+                <circle className="progress-fill" ref={circleRef} cx="26" cy="26" r="22" />
                 <text className="progress-pct" ref={pctTextRef} x="26" y="28" textAnchor="middle">0%</text>
               </svg>
             </div>
@@ -779,7 +789,7 @@ export default function DrawingPreloader({
                 Enter the World
               </button>
               <div className="tagline">
-                Four days of code, strategy, and innovation await<br/>
+                Four days of code, strategy, and innovation await<br />
                 Enter the world of Spectrum Week
               </div>
             </div>

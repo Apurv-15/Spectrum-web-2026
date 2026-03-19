@@ -10,7 +10,7 @@ import useOverlayStore from "../../utils/store";
 import Lenis from "@studio-freight/lenis";
 import { gsap } from "gsap";
 
-const FRAME_COUNT = 239;
+const FRAME_COUNT = 240;
 const FRAME_START = 1;
 
 // Path to images in public directory
@@ -42,6 +42,7 @@ export default function LandingRevamp({
   const overlayIsActive = useOverlayStore((state) => state.isActive);
   const removeGif = useOverlayStore((state) => state.removeGif);
   const setRemoveGif = useOverlayStore((state) => state.setRemoveGif);
+  const setLandingReady = useOverlayStore((state) => state.setLandingReady);
 
   const [styleTag, setstyleTag] = useState([
     audioRef.current?.paused ? styles.soundLine2 : styles.soundLine,
@@ -141,7 +142,25 @@ export default function LandingRevamp({
             imagesRef.current[i] = img;
             loaded++;
             setImagesLoaded(loaded);
+            if (loaded % 20 === 0 || loaded === FRAME_COUNT) {
+              console.log(`LandingRevamp: Loaded ${loaded}/${FRAME_COUNT} frames`);
+            }
+            if (loaded === FRAME_COUNT) {
+              console.log("LandingRevamp: ALL FRAMES LOADED - SETTING READY");
+              setLandingReady(true);
+            }
             if (i === FRAME_START) renderFrame(FRAME_START);
+          }
+        };
+        img.onerror = () => {
+          if (!isCancelled) {
+            console.error(`LandingRevamp: Failed to load frame ${i}`);
+            loaded++;
+            setImagesLoaded(loaded);
+            if (loaded === FRAME_COUNT) {
+              console.log("LandingRevamp: ALL FRAMES (WITH ERRORS) PROCESSED - SETTING READY");
+              setLandingReady(true);
+            }
           }
         };
       }
