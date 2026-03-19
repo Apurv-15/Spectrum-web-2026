@@ -57,6 +57,18 @@ const imagesToPreload = [
   "/images/aboutus/backg.png",
   "/images/aboutus/abtbck.png",
   "/videos/dragon-reveal.gif",
+  "/images/New_images_gdg/sprite_1.png",
+  "/images/New_images_gdg/sprite_2.png",
+  "/images/New_images_gdg/sprite_3.png",
+  "/images/New_images_gdg/sprite_4.png",
+  "/images/New_images_gdg/sprite_5.png",
+  "/images/New_images_gdg/sprite_6.png",
+  "/images/New_images_gdg/sprite_7.png",
+  "/images/New_images_gdg/sprite_8.png",
+  "/images/New_images_gdg/sprite_9.png",
+  "/images/New_images_gdg/sprite_10.png",
+  "/images/New_images_gdg/sprite_11.png",
+  "/images/New_images_gdg/sprite_12.png",
 ];
 
 const soundsToPreload: string[] = [];

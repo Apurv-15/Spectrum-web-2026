@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./LandingRevamp.module.scss";
 
 import Navbar from "../components/navbar/Navbar";
@@ -10,14 +10,19 @@ import useOverlayStore from "../../utils/store";
 import Lenis from "@studio-freight/lenis";
 import { gsap } from "gsap";
 
-const FRAME_COUNT = 240;
-const FRAME_START = 1;
+// ─── Sprite sheet configuration ───────────────────────────────────────────────
+const TOTAL_FRAMES = 240;
+const SPRITE_COUNT = 12;
+const FRAMES_PER_SPRITE = 20; // frames per sprite sheet
+const GRID_COLS = 4;
+const GRID_ROWS = 5; // FRAMES_PER_SPRITE / GRID_COLS
+const FRAME_W = 1024;
+const FRAME_H = 576;
 
-// Path to images in public directory
-const getFramePath = (index: number) => {
-  const paddedIndex = index.toString().padStart(3, "0");
-  return `/images/New_images_gdg/Landing_page/ezgif-frame-${paddedIndex}.jpg`;
-};
+const getSpritePath = (i: number) => `/images/New_images_gdg/sprite_${i}.png`;
+
+// ─── Lerp helper ──────────────────────────────────────────────────────────────
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 export default function LandingRevamp({
   goToPage,
@@ -28,49 +33,174 @@ export default function LandingRevamp({
   onToggle: () => void;
   audioRef: React.RefObject<HTMLAudioElement | null>;
 }) {
+  // ─── DOM refs ─────────────────────────────────────────────────────────────
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scrollSectionRef = useRef<HTMLDivElement>(null);
-  const imagesRef = useRef<HTMLImageElement[]>([]);
-  const frameRef = useRef<number>(FRAME_START);
+
+  // ─── Animation state (all refs — zero React re-renders during animation) ──
+  const bitmapsRef = useRef<ImageBitmap[][]>([]); // [spriteIndex][frameInSprite]
+  const currentFrameRef = useRef(0);              // lerped current frame (float)
+  const targetFrameRef = useRef(0);               // scroll-driven target frame
+  const rafIdRef = useRef<number>(0);
+  const isReadyRef = useRef(false);               // all bitmaps loaded
+
+  // ─── Lenis & GSAP refs ────────────────────────────────────────────────────
   const lenisRef = useRef<Lenis | null>(null);
-  const [imagesLoaded, setImagesLoaded] = useState(0);
+
+  // ─── React state (UI only) ────────────────────────────────────────────────
+  const [allLoaded, setAllLoaded] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const isMainHamOpen = useMainHamStore((s) => s.isMainHamOpen);
+  const setIsMainHamOpen = useMainHamStore((s) => s.setMainHamOpen);
+  const overlayIsActive = useOverlayStore((s) => s.isActive);
+  const removeGif = useOverlayStore((s) => s.removeGif);
+  const setRemoveGif = useOverlayStore((s) => s.setRemoveGif);
+  const setLandingReady = useOverlayStore((s) => s.setLandingReady);
 
-  const isMainHamOpen = useMainHamStore((state) => state.isMainHamOpen);
-  const setIsMainHamOpen = useMainHamStore((state) => state.setMainHamOpen);
-
-  const overlayIsActive = useOverlayStore((state) => state.isActive);
-  const removeGif = useOverlayStore((state) => state.removeGif);
-  const setRemoveGif = useOverlayStore((state) => state.setRemoveGif);
-  const setLandingReady = useOverlayStore((state) => state.setLandingReady);
-
-  const [styleTag, setstyleTag] = useState([
+  const [styleTag, setStyleTag] = useState([
     audioRef.current?.paused ? styles.soundLine2 : styles.soundLine,
     styles.soundCross2,
   ]);
 
-  const renderFrame = useCallback((index: number) => {
+  // ─── Draw a single frame to canvas (pure function, no React deps) ─────────
+  const drawFrame = (frameIndex: number) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !isReadyRef.current) return;
+
     const ctx = canvas.getContext("2d");
-    const img = imagesRef.current[index];
+    if (!ctx) return;
 
-    if (ctx && img && img.complete) {
-      const canvasWidth = canvas.width;
-      const canvasHeight = canvas.height;
+    const fi = Math.round(Math.max(0, Math.min(TOTAL_FRAMES - 1, frameIndex)));
+    const spriteIdx = Math.floor(fi / FRAMES_PER_SPRITE);
+    const frameInSprite = fi % FRAMES_PER_SPRITE;
 
-      // Calculate aspect ratio for "cover" effect
-      const scale = Math.max(canvasWidth / img.width, canvasHeight / img.height);
-      const x = (canvasWidth - img.width * scale) / 2;
-      const y = (canvasHeight - img.height * scale) / 2;
+    const bitmaps = bitmapsRef.current[spriteIdx];
+    if (!bitmaps) return;
 
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-      ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-    }
-  }, []);
+    const bitmap = bitmaps[frameInSprite];
+    if (!bitmap) return;
 
-  // Initialize Lenis
+    const cw = canvas.width;
+    const ch = canvas.height;
+    const scale = Math.max(cw / FRAME_W, ch / FRAME_H);
+    const dx = (cw - FRAME_W * scale) / 2;
+    const dy = (ch - FRAME_H * scale) / 2;
+
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(bitmap, dx, dy, FRAME_W * scale, FRAME_H * scale);
+  };
+
+  // ─── RAF animation loop ───────────────────────────────────────────────────
+  useEffect(() => {
+    let lastDrawnFrame = -1;
+
+    const tick = () => {
+      rafIdRef.current = requestAnimationFrame(tick);
+
+      if (!isReadyRef.current) return;
+
+      // Lerp toward target — 0.12 gives an Apple-style silky feel
+      currentFrameRef.current = lerp(currentFrameRef.current, targetFrameRef.current, 0.12);
+
+      const rounded = Math.round(currentFrameRef.current);
+      if (rounded !== lastDrawnFrame) {
+        lastDrawnFrame = rounded;
+        drawFrame(rounded);
+      }
+    };
+
+    rafIdRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafIdRef.current);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Resize handler ───────────────────────────────────────────────────────
+  useEffect(() => {
+    const handleResize = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      drawFrame(Math.round(currentFrameRef.current));
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Preload all sprites → createImageBitmap ─────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadAll = async () => {
+      try {
+        for (let si = 0; si < SPRITE_COUNT; si++) {
+          if (cancelled) return;
+
+          // Fetch the sprite PNG as a blob
+          const resp = await fetch(getSpritePath(si + 1));
+          if (!resp.ok) throw new Error(`HTTP ${resp.status} for sprite ${si + 1}`);
+          const blob = await resp.blob();
+          if (cancelled) return;
+
+          // Slice into individual frame bitmaps
+          const sheetBitmap = await createImageBitmap(blob);
+          if (cancelled) { sheetBitmap.close(); return; }
+
+          const frames: ImageBitmap[] = [];
+          for (let fi = 0; fi < FRAMES_PER_SPRITE; fi++) {
+            const col = fi % GRID_COLS;
+            const row = Math.floor(fi / GRID_COLS);
+            const bm = await createImageBitmap(
+              sheetBitmap,
+              col * FRAME_W,
+              row * FRAME_H,
+              FRAME_W,
+              FRAME_H
+            );
+            frames.push(bm);
+          }
+          sheetBitmap.close(); // release the full sheet — we keep only per-frame bitmaps
+
+          bitmapsRef.current[si] = frames;
+
+          // Draw first frame as soon as sprite 0 is ready
+          if (si === 0) {
+            isReadyRef.current = true;
+            targetFrameRef.current = 0;
+            currentFrameRef.current = 0;
+          }
+
+          console.log(`LandingRevamp: bitmap sprite ${si + 1}/${SPRITE_COUNT} ready`);
+        }
+
+        if (!cancelled) {
+          console.log("LandingRevamp: ALL BITMAPS READY");
+          setAllLoaded(true);
+          setLandingReady(true);
+        }
+      } catch (err) {
+        console.error("LandingRevamp: bitmap load error", err);
+        if (!cancelled) {
+          setAllLoaded(true);
+          setLandingReady(true);
+        }
+      }
+    };
+
+    loadAll();
+
+    return () => {
+      cancelled = true;
+      // Free all GPU memory on unmount
+      bitmapsRef.current.forEach((frames) => frames?.forEach((bm) => bm.close()));
+      bitmapsRef.current = [];
+      isReadyRef.current = false;
+    };
+  }, [setLandingReady]);
+
+  // ─── Lenis smooth scroll ──────────────────────────────────────────────────
   useEffect(() => {
     lenisRef.current = new Lenis({
       duration: 2,
@@ -86,122 +216,57 @@ export default function LandingRevamp({
     };
     requestAnimationFrame(raf);
 
-    return () => {
-      lenisRef.current?.destroy();
-    };
+    return () => lenisRef.current?.destroy();
   }, []);
 
-  const updateFrame = useCallback(() => {
-    if (!lenisRef.current || !scrollSectionRef.current) return;
-
-    const scrollTop = lenisRef.current.scroll || 0;
-    const sectionHeight = scrollSectionRef.current.offsetHeight;
-    const maxScroll = sectionHeight - window.innerHeight;
-
-    const scrollFraction = Math.min(1, Math.max(0, scrollTop / maxScroll));
-
-    const frameIndex = Math.min(
-      FRAME_COUNT,
-      Math.max(FRAME_START, Math.round(scrollFraction * (FRAME_COUNT - FRAME_START)) + FRAME_START)
-    );
-
-    if (scrollFraction > 0.05 && scrollFraction < 0.95) {
-      setIsScrolled(true);
-    } else {
-      setIsScrolled(false);
-    }
-
-    if (frameRef.current !== frameIndex) {
-      frameRef.current = frameIndex;
-      renderFrame(frameIndex);
-    }
-  }, [renderFrame]);
-
-  // Sync frame updates with Lenis
+  // ─── Passive scroll listener → update targetFrame ─────────────────────────
   useEffect(() => {
-    if (!lenisRef.current) return;
-
     const handleScroll = () => {
-      updateFrame();
+      const section = scrollSectionRef.current;
+      if (!section) return;
+
+      const scrollTop = window.scrollY;
+      const maxScroll = section.offsetHeight - window.innerHeight;
+      const fraction = Math.min(1, Math.max(0, scrollTop / maxScroll));
+
+      targetFrameRef.current = fraction * (TOTAL_FRAMES - 1);
+
+      // Scroll indicator visibility (UI state update — low frequency)
+      setIsScrolled(fraction > 0.05 && fraction < 0.95);
     };
 
-    lenisRef.current.on("scroll", handleScroll);
-    return () => {
-      lenisRef.current?.off("scroll", handleScroll);
-    };
-  }, [updateFrame]);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-
-
-  // Preload frames
+  // ─── GSAP auto-scroll on wheel ────────────────────────────────────────────
   useEffect(() => {
-    let isCancelled = false;
+    if (!allLoaded) return;
 
-    const preloadFrames = async () => {
-      let loaded = 0;
-      for (let i = FRAME_START; i <= FRAME_COUNT; i++) {
-        if (isCancelled) break;
-
-        const img = new Image();
-        img.src = getFramePath(i);
-        img.onload = () => {
-          if (!isCancelled) {
-            imagesRef.current[i] = img;
-            loaded++;
-            setImagesLoaded(loaded);
-            if (loaded % 20 === 0 || loaded === FRAME_COUNT) {
-              console.log(`LandingRevamp: Loaded ${loaded}/${FRAME_COUNT} frames`);
-            }
-            if (loaded === FRAME_COUNT) {
-              console.log("LandingRevamp: ALL FRAMES LOADED - SETTING READY");
-              setLandingReady(true);
-            }
-            if (i === FRAME_START) renderFrame(FRAME_START);
-          }
-        };
-        img.onerror = () => {
-          if (!isCancelled) {
-            console.error(`LandingRevamp: Failed to load frame ${i}`);
-            loaded++;
-            setImagesLoaded(loaded);
-            if (loaded === FRAME_COUNT) {
-              console.log("LandingRevamp: ALL FRAMES (WITH ERRORS) PROCESSED - SETTING READY");
-              setLandingReady(true);
-            }
-          }
-        };
-      }
-    };
-
-    preloadFrames();
-    return () => { isCancelled = true; };
-  }, [renderFrame]);
-
-  // Handle Wheel/Trackpad for Auto Scroll
-  useEffect(() => {
     let isAnimating = false;
     let animationTween: gsap.core.Tween | null = null;
     let wheelAccumulator = 0;
-    const WHEEL_THRESHOLD = 30; // Lower threshold for trackpads
+    const WHEEL_THRESHOLD = 30;
 
     const handleWheel = (e: WheelEvent) => {
-      if (!lenisRef.current || imagesLoaded < FRAME_COUNT * 0.5) return;
+      if (!lenisRef.current) return;
 
       const currentScroll = lenisRef.current.scroll || 0;
-      const maxScroll = scrollSectionRef.current?.offsetHeight ? scrollSectionRef.current.offsetHeight - window.innerHeight : 0;
+      const maxScroll = scrollSectionRef.current
+        ? scrollSectionRef.current.offsetHeight - window.innerHeight
+        : 0;
 
-      // Accumulate delta to detect intent
       wheelAccumulator += Math.abs(e.deltaY);
 
-      // Auto scroll triggers if user is in the frame section
       if (currentScroll < maxScroll && wheelAccumulator > WHEEL_THRESHOLD) {
         const targetScroll = e.deltaY > 0 ? maxScroll : 0;
-
-        // Check if we already are near the target
         if (Math.abs(currentScroll - targetScroll) < 50) return;
 
-        // Handle interruption: if user scrolls back, kill the auto-animation
-        if (animationTween && ((e.deltaY > 0 && animationTween.vars.scroll < currentScroll) || (e.deltaY < 0 && animationTween.vars.scroll > currentScroll))) {
+        if (
+          animationTween &&
+          ((e.deltaY > 0 && (animationTween.vars as any).scroll < currentScroll) ||
+            (e.deltaY < 0 && (animationTween.vars as any).scroll > currentScroll))
+        ) {
           animationTween.kill();
           isAnimating = false;
           wheelAccumulator = 0;
@@ -209,102 +274,83 @@ export default function LandingRevamp({
 
         if (!isAnimating) {
           isAnimating = true;
-          const scrollProxy = { value: currentScroll };
-          animationTween = gsap.to(scrollProxy, {
+          const proxy = { value: currentScroll };
+          animationTween = gsap.to(proxy, {
             value: targetScroll,
             duration: 5,
             ease: "power2.inOut",
             onUpdate: () => {
-              lenisRef.current?.scrollTo(scrollProxy.value, { immediate: true });
-              updateFrame();
+              lenisRef.current?.scrollTo(proxy.value, { immediate: true });
             },
             onComplete: () => {
               isAnimating = false;
               animationTween = null;
               wheelAccumulator = 0;
-            }
+            },
           });
         }
       }
 
-      // Reset accumulator if no events for a while
       setTimeout(() => { wheelAccumulator = 0; }, 150);
     };
 
     window.addEventListener("wheel", handleWheel, { passive: true });
     return () => {
       window.removeEventListener("wheel", handleWheel);
-      if (animationTween) animationTween.kill();
+      animationTween?.kill();
     };
-  }, [imagesLoaded, updateFrame]);
+  }, [allLoaded]);
 
-  // Handle Resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (canvasRef.current) {
-        canvasRef.current.width = window.innerWidth * (window.devicePixelRatio || 1);
-        canvasRef.current.height = window.innerHeight * (window.devicePixelRatio || 1);
-        renderFrame(frameRef.current);
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    handleResize();
-    return () => window.removeEventListener("resize", handleResize);
-  }, [renderFrame]);
-
-  useEffect(() => {
-    setstyleTag([
-      audioRef.current?.paused ? styles.soundLine2 : styles.soundLine,
-      styles.soundCross2,
-    ]);
-  }, [audioRef.current?.paused]);
-
-  useEffect(() => {
-    if (overlayIsActive) {
-      setTimeout(() => {
-        setRemoveGif();
-      }, 3000);
-    }
-  }, [overlayIsActive, setRemoveGif]);
-
+  // ─── Body scroll lock ─────────────────────────────────────────────────────
   useEffect(() => {
     if (removeGif) {
-      // Unlock native scroll allowing the canvas to be scrolled
       document.body.style.overflow = "";
       document.body.style.height = "";
-    }
-    if (!removeGif) {
-      // Force native scroll lock and reset scroll to top so the user starts exactly at frame 1
+    } else {
       window.scrollTo(0, 0);
       document.body.style.overflow = "hidden";
       document.body.style.height = "100svh";
     }
-
-    // Cleanup exactly when component unmounts for safety
     return () => {
       document.body.style.overflow = "";
       document.body.style.height = "";
     };
   }, [removeGif]);
 
+  // ─── Overlay transition ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (overlayIsActive) {
+      setTimeout(() => setRemoveGif(), 3000);
+    }
+  }, [overlayIsActive, setRemoveGif]);
+
+  // ─── Sound icon sync ──────────────────────────────────────────────────────
+  useEffect(() => {
+    setStyleTag([
+      audioRef.current?.paused ? styles.soundLine2 : styles.soundLine,
+      styles.soundCross2,
+    ]);
+  }, [audioRef.current?.paused]);
+
+  // ─── JSX ──────────────────────────────────────────────────────────────────
   return (
     <div
       className={`${styles.wrapper} ${!removeGif ? styles.pointerNoneEvent : ""} ${overlayIsActive ? styles.mask : ""}`}
       style={{
         maskImage: removeGif ? "none" : undefined,
-        WebkitMaskImage: removeGif ? "none" : undefined
+        WebkitMaskImage: removeGif ? "none" : undefined,
       }}
     >
       <Navbar />
 
-      {/* Scrollable container for pinning canvas */}
+      {/* Scroll section — long enough to cover all 240 frames */}
       <div className={styles.scrollSection} ref={scrollSectionRef}>
         <div className={styles.canvasContainer}>
           <canvas ref={canvasRef} className={styles.mainCanvas} />
         </div>
       </div>
 
-      {/* Social and Menu Overlays */}
+      {/* Overlays */}
       <div className={styles.contentOverlay}>
         <div
           className={
@@ -319,12 +365,7 @@ export default function LandingRevamp({
           </div>
         </div>
 
-        <div
-          className={styles.sounds}
-          onClick={() => {
-            onToggle();
-          }}
-        >
+        <div className={styles.sounds} onClick={onToggle}>
           <span className={styleTag[0]}></span>
           <span className={styleTag[0]}></span>
           <span className={styleTag[0]}></span>
@@ -340,7 +381,7 @@ export default function LandingRevamp({
         </div>
       </div>
 
-      {/* Footer / About Us Section */}
+      {/* About Us */}
       <div className={styles.bottomContainer}>
         <div className={styles.aboutUsContainer}>
           <AboutUs isBackBtn={false} />
