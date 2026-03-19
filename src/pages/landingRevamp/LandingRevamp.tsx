@@ -15,10 +15,19 @@ const TOTAL_FRAMES = 240;
 const SPRITE_COUNT = 12;
 const FRAMES_PER_SPRITE = 20; // frames per sprite sheet
 const GRID_COLS = 4;
-const FRAME_W = 1024;
-const FRAME_H = 576;
 
-const getSpritePath = (i: number) => `/images/New_images_gdg/sprite_${i}.png`;
+// Desktop dimensions
+const DESKTOP_W = 1024;
+const DESKTOP_H = 576;
+
+// Mobile dimensions (downscaled for performance)
+const MOBILE_W = 540;
+const MOBILE_H = 960;
+
+const getSpritePath = (i: number, isMobile: boolean) => 
+  isMobile 
+    ? `/images/New_images_gdg/mobile_sheets/sprite_${i}.webp`
+    : `/images/New_images_gdg/sprite_${i}.png`;
 
 // ─── Lerp helper ──────────────────────────────────────────────────────────────
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -42,6 +51,7 @@ export default function LandingRevamp({
   const targetFrameRef = useRef(0);               // scroll-driven target frame
   const rafIdRef = useRef<number>(0);
   const isReadyRef = useRef(false);               // all bitmaps loaded
+  const isMobileRef = useRef(false);
 
   // ─── Lenis & GSAP refs ────────────────────────────────────────────────────
   const lenisRef = useRef<Lenis | null>(null);
@@ -80,14 +90,18 @@ export default function LandingRevamp({
     const bitmap = bitmaps[frameInSprite];
     if (!bitmap) return;
 
+    const isMobile = isMobileRef.current;
+    const fw = isMobile ? MOBILE_W : DESKTOP_W;
+    const fh = isMobile ? MOBILE_H : DESKTOP_H;
+
     const cw = canvas.width;
     const ch = canvas.height;
-    const scale = Math.max(cw / FRAME_W, ch / FRAME_H);
-    const dx = (cw - FRAME_W * scale) / 2;
-    const dy = (ch - FRAME_H * scale) / 2;
+    const scale = Math.max(cw / fw, ch / fh);
+    const dx = (cw - fw * scale) / 2;
+    const dy = (ch - fh * scale) / 2;
 
     ctx.clearRect(0, 0, cw, ch);
-    ctx.drawImage(bitmap, dx, dy, FRAME_W * scale, FRAME_H * scale);
+    ctx.drawImage(bitmap, dx, dy, fw * scale, fh * scale);
   };
 
   // ─── RAF animation loop ───────────────────────────────────────────────────
@@ -134,11 +148,16 @@ export default function LandingRevamp({
 
     const loadAll = async () => {
       try {
+        const isMobile = window.innerWidth < 768;
+        isMobileRef.current = isMobile;
+        const fw = isMobile ? MOBILE_W : DESKTOP_W;
+        const fh = isMobile ? MOBILE_H : DESKTOP_H;
+
         for (let si = 0; si < SPRITE_COUNT; si++) {
           if (cancelled) return;
 
           // Fetch with cache policy to hit preloader cache
-          const resp = await fetch(getSpritePath(si + 1), { cache: 'force-cache' });
+          const resp = await fetch(getSpritePath(si + 1, isMobile), { cache: 'force-cache' });
           if (!resp.ok) throw new Error(`HTTP ${resp.status} for sprite ${si + 1}`);
           const blob = await resp.blob();
           if (cancelled) return;
@@ -153,10 +172,10 @@ export default function LandingRevamp({
             const row = Math.floor(fi / GRID_COLS);
             const bm = await createImageBitmap(
               sheetBitmap,
-              col * FRAME_W,
-              row * FRAME_H,
-              FRAME_W,
-              FRAME_H,
+              col * fw,
+              row * fh,
+              fw,
+              fh,
               { colorSpaceConversion: 'none' }
             );
             frames.push(bm);
@@ -164,7 +183,7 @@ export default function LandingRevamp({
           sheetBitmap.close(); 
 
           bitmapsRef.current[si] = frames;
-          console.log(`LandingRevamp: bitmap sprite ${si + 1}/${SPRITE_COUNT} ready`);
+          console.log(`LandingRevamp: bitmap sprite ${si + 1}/${SPRITE_COUNT} (${isMobile ? 'mobile' : 'desktop'}) ready`);
         }
 
         if (!cancelled) {
