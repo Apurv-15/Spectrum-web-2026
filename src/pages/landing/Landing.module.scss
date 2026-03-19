@@ -87,10 +87,14 @@ body {
 .wrapper {
   width: 100%;
   height: 200svh;
-  mask-image: url("");
+  mask-image: linear-gradient(transparent, transparent);
+  -webkit-mask-image: linear-gradient(transparent, transparent);
   mask-size: cover;
+  -webkit-mask-size: cover;
   mask-position: center;
+  -webkit-mask-position: center;
   mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
 
   .hamContainer {
     position: fixed;
@@ -632,9 +636,13 @@ body {
 
   &.mask {
     mask-image: url("/videos/ink-spread-5.gif");
+    -webkit-mask-image: url("/videos/ink-spread-5.gif");
     mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
     mask-size: cover;
+    -webkit-mask-size: cover;
     mask-position: center;
+    -webkit-mask-position: center;
     height: 100svh;
   }
 }

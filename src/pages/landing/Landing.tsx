@@ -252,6 +252,7 @@ export default function Landing({
   useEffect(() => {
     if (removeGif && wrapperRef.current) {
       wrapperRef.current.style.maskImage = "none";
+      (wrapperRef.current.style as any).WebkitMaskImage = "none";
       document.body.style.position = "static";
     }
     if (!removeGif) {
