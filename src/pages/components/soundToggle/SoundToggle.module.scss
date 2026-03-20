@@ -1,0 +1,74 @@
+.sounds {
+  position: fixed;
+  z-index: 9999;
+  right: 20px;
+  top: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  pointer-events: auto;
+  border-radius: 50%;
+  border: 2px solid #00f7ff;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+
+  @media screen and (max-width: 730px) {
+    bottom: 30px;
+    right: 20px;
+    top: unset;
+  }
+
+  .soundLine {
+    height: 15px;
+    width: 2.5px;
+    background: #00f7ff;
+    animation: soundWave 1s infinite alternate;
+    box-shadow: 0 0 5px rgba(0, 247, 255, 0.5);
+
+    &:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    &:nth-child(4) {
+      animation-delay: 0.6s;
+    }
+
+    &:nth-child(5) {
+      animation-delay: 0.8s;
+    }
+  }
+
+  .soundLine2 {
+    height: 3px;
+    width: 3px;
+    border-radius: 50%;
+    background: #00f7ff;
+  }
+
+  .soundCross,
+  .soundCross2 {
+    position: absolute;
+    width: 2px;
+    height: 20px;
+    background: #00f7ff;
+    transform: rotate(45deg);
+  }
+}
+
+@keyframes soundWave {
+  from {
+    transform: scaleY(0.5);
+  }
+
+  to {
+    transform: scaleY(1.5);
+  }
+}
