@@ -133,8 +133,8 @@ export default function DrawingPreloader({
     }
 
     const allImages = [...baseImagesToPreload];
-    
-    const CONCURRENCY_LIMIT = 6;
+    const isMobile = window.innerWidth < 768;
+    const CONCURRENCY_LIMIT = isMobile ? 4 : 8;
     let imagesLoaded = 0;
     const totalAssets = allImages.length + soundsToPreload.length;
 
