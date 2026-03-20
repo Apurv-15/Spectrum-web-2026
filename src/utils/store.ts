@@ -7,12 +7,16 @@ type overlayActive = {
   preloaderProgress: number;
   bitMapCache: ImageBitmap[][] | null;
   isPlaying: boolean;
+  spritesLoaded: number;
+  isFetchingSprites: boolean;
   setActive: () => void;
   setRemoveGif: () => void;
   setLandingReady: (ready: boolean) => void;
   setPreloaderProgress: (progress: number) => void;
   setBitMapCache: (cache: ImageBitmap[][]) => void;
   setIsPlaying: (playing: boolean) => void;
+  setSpritesLoaded: (count: number) => void;
+  setIsFetchingSprites: (fetching: boolean) => void;
   togglePlaying: () => void;
   resetActive: () => void;
   resetRemoveGif: () => void;
@@ -27,12 +31,16 @@ const useOverlayStore = create<overlayActive>((set) => ({
   preloaderProgress: 0,
   bitMapCache: null,
   isPlaying: false,
+  spritesLoaded: 0,
+  isFetchingSprites: false,
   setActive: () => set({ isActive: true }),
   setRemoveGif: () => set({ removeGif: true }),
   setLandingReady: (ready) => set({ isLandingReady: ready }),
   setPreloaderProgress: (progress) => set({ preloaderProgress: progress }),
   setBitMapCache: (cache) => set({ bitMapCache: cache }),
   setIsPlaying: (playing) => set({ isPlaying: playing }),
+  setSpritesLoaded: (count) => set({ spritesLoaded: count }),
+  setIsFetchingSprites: (fetching) => set({ isFetchingSprites: fetching }),
   togglePlaying: () => set((state) => ({ isPlaying: !state.isPlaying })),
   resetActive: () => set({ isActive: false }),
   resetRemoveGif: () => set({ removeGif: false }),
