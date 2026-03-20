@@ -37,12 +37,8 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 export default function LandingRevamp({
   goToPage,
-  onToggle,
-  audioRef,
 }: {
   goToPage: (path: string) => void;
-  onToggle: () => void;
-  audioRef: React.RefObject<HTMLAudioElement | null>;
 }) {
   // ─── DOM refs ─────────────────────────────────────────────────────────────
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -71,19 +67,17 @@ export default function LandingRevamp({
   const resetRemoveGif = useOverlayStore((s) => s.resetRemoveGif);
   const setLandingReady = useOverlayStore((s) => s.setLandingReady);
 
-  const [styleTag, setStyleTag] = useState([
-    audioRef.current?.paused ? styles.soundLine2 : styles.soundLine,
-    styles.soundCross2,
-  ]);
+  const isReturningRef = useRef(false);
   
   useEffect(() => {
-    // Reset removeGif on mount to allow re-playing the ink spread
-    resetRemoveGif();
-  }, [resetRemoveGif]);
-
-   useEffect(() => {
-    // Reset removeGif on mount so it re-plays if user navigates back
-    resetRemoveGif();
+    // Check if we are returning via back navigation OR if we've already seen the intro in this session
+    const hasSeenIntro = sessionStorage.getItem("introPlayed") === "true";
+    if (hasSeenIntro) {
+      isReturningRef.current = true;
+    } else {
+      // Reset removeGif on mount to allow re-playing the ink spread
+      resetRemoveGif();
+    }
   }, [resetRemoveGif]);
 
   // ─── Draw a single frame to canvas (pure function, no React deps) ─────────
@@ -127,8 +121,8 @@ export default function LandingRevamp({
 
       if (!isReadyRef.current) return;
 
-      // Lerp toward target — 0.08 gives an Apple-style silky feel
-      currentFrameRef.current = lerp(currentFrameRef.current, targetFrameRef.current, 0.15);
+      // Lerp toward target — slightly faster follow
+      currentFrameRef.current = lerp(currentFrameRef.current, targetFrameRef.current, 0.2);
 
       const rounded = Math.round(currentFrameRef.current);
       if (rounded !== lastDrawnFrame) {
@@ -292,20 +286,55 @@ export default function LandingRevamp({
 
     // Trigger MainHam visibility based on scroll (last 10%)
     if (fraction > 0.92) {
-      if (!isMainHamOpen) setIsMainHamOpen(true);
+      if (!isMainHamOpen) {
+        setIsMainHamOpen(true);
+        sessionStorage.setItem("introPlayed", "true");
+      }
     } else if (fraction < 0.85) {
       if (isMainHamOpen) setIsMainHamOpen(false);
     }
 
     // Scroll indicator visibility (UI state update — low frequency)
     setIsScrolled(fraction > 0.05 && fraction < 0.95);
-  }, [isMainHamOpen]);
+  }, [isMainHamOpen, setIsMainHamOpen]);
 
   // ─── Passive scroll listener ──────────────────────────────────────────────
   useEffect(() => {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
+
+  // Handle scroll to bottom when returning
+  useEffect(() => {
+    if (isReturningRef.current && allLoaded) {
+      const section = scrollSectionRef.current;
+      if (section) {
+        // Wait longer than the 50ms ScrollTrigger refresh to avoid race conditions
+        const timer = setTimeout(() => {
+          const maxScroll = section.offsetHeight - window.innerHeight;
+          
+          // Force immediate scroll
+          window.scrollTo(0, maxScroll);
+          if (lenisRef.current) {
+            lenisRef.current.scrollTo(maxScroll, { immediate: true });
+          }
+
+          // Let the browser register the new scroll position before syncing state
+          requestAnimationFrame(() => {
+            targetFrameRef.current = TOTAL_FRAMES - 1;
+            currentFrameRef.current = TOTAL_FRAMES - 1;
+            setIsMainHamOpen(true);
+            
+            handleScroll(); // Now handleScroll will correctly read the max scroll Y
+            drawFrame(TOTAL_FRAMES - 1);
+            
+            isReturningRef.current = false;
+          });
+        }, 120);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [allLoaded, setIsMainHamOpen, handleScroll]);
 
   // ─── GSAP auto-scroll on wheel ────────────────────────────────────────────
   useEffect(() => {
@@ -345,8 +374,8 @@ export default function LandingRevamp({
           const proxy = { value: currentScroll };
           animationTween = gsap.to(proxy, {
             value: targetScroll,
-            duration: 12, // More cinematic
-            ease: "power2.inOut",
+            duration: 9, // Slightly faster for responsiveness
+            ease: "power1.inOut", // Less slow start than power2
             onUpdate: () => {
               lenisRef.current?.scrollTo(proxy.value, { immediate: true });
             },
@@ -393,15 +422,6 @@ export default function LandingRevamp({
       setTimeout(() => setRemoveGif(), 1500); // Prevent loop
     }
   }, [overlayIsActive, removeGif, setRemoveGif]);
-
-  // ─── Sound icon sync ──────────────────────────────────────────────────────
-  useEffect(() => {
-    setStyleTag([
-      audioRef.current?.paused ? styles.soundLine2 : styles.soundLine,
-      styles.soundCross2,
-    ]);
-  }, [audioRef.current?.paused]);
-
   // ─── JSX ──────────────────────────────────────────────────────────────────
   return (
     <div
@@ -416,7 +436,7 @@ export default function LandingRevamp({
       {/* Scroll section house the sticky animation */}
       <div className={styles.scrollSection} ref={scrollSectionRef}>
         <div className={styles.canvasContainer}>
-          <canvas ref={canvasRef} className={styles.mainCanvas} />
+          <canvas ref={canvasRef} className={`${styles.mainCanvas} ${allLoaded ? styles.visible : ""}`} />
         </div>
       </div>
 
@@ -425,16 +445,8 @@ export default function LandingRevamp({
         <MainHam goToPage={goToPage} />
       </div>
 
-      {/* Static Overlays (Sound, Scroll Indicator) */}
+      {/* Static Overlays (Scroll Indicator) */}
       <div className={styles.contentOverlay}>
-        <div className={styles.sounds} onClick={onToggle}>
-          <span className={styleTag[0]}></span>
-          <span className={styleTag[0]}></span>
-          <span className={styleTag[0]}></span>
-          <span className={styleTag[0]}></span>
-          <span className={styleTag[0]}></span>
-        </div>
-
         <div className={`${styles.scrollIndicator} ${isScrolled || !removeGif ? styles.hidden : ""}`}>
           <div className={styles.mouse}>
             <div className={styles.wheel}></div>
