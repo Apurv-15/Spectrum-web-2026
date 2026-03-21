@@ -1,87 +1,8 @@
 @use "../../../assets/global.scss" as *;
 
-.videoPreloader {
+.preloaderContainer {
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background: #000;
-}
-
-.bgVideo {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding-bottom: 80px;
-  z-index: 1;
-}
-
-.progressContainer {
-  width: min(240px, 60vw);
-  height: 2px;
-  background: rgba(255, 223, 208, 0.15);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: 30px;
-}
-
-.progressBar {
-  height: 100%;
-  background: $accentGold;
-  border-radius: 2px;
-  transition: width 0.3s ease;
-}
-
-.enterWrap {
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-
-  &.visible {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-  }
-}
-
-.enterBtn {
-  font-family: $primaryFont;
-  font-size: 1rem;
-  color: #ffdfd0;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1.5px solid rgba(255, 223, 208, 0.4);
-  padding: 14px 50px;
-  cursor: pointer;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(6px);
-
-  &:hover {
-    background: rgba(255, 223, 208, 0.12);
-    border-color: #ffdfd0;
-  }
-}
-
-.loadingText {
-  font-family: $primaryFont;
-  font-size: 0.8rem;
-  color: rgba(255, 223, 208, 0.5);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  background: #f5ede0;
 }
