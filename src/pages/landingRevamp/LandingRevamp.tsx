@@ -58,7 +58,6 @@ export default function LandingRevamp({
 
   const bitMapCache = useOverlayStore((s) => s.bitMapCache);
   const cacheType = useOverlayStore((s) => s.cacheType);
-  const setBitMapCache = useOverlayStore((s) => s.setBitMapCache);
   const setLandingReady = useOverlayStore((s) => s.setLandingReady);
   const setSpritesLoaded = useOverlayStore((s) => s.setSpritesLoaded);
   const overlayIsActive = useOverlayStore((s) => s.isActive);

@@ -4,6 +4,8 @@ import DoorTransition from "./pages/components/page-transition/DoorTransition";
 import useOverlayStore from "./utils/store";
 import SoundToggle from "./pages/components/soundToggle/SoundToggle";
 import bgMusic from "/sounds/bg-music2.mp3";
+import { Analytics } from "@vercel/analytics/react";
+
 
 import Homepage from "./Homepage";
 
@@ -129,6 +131,7 @@ export default function App() {
         {currentPage === "events/invasion" && <Invasion />}
         {currentPage === "about" && <AboutUs />}
       </Suspense>
+      <Analytics />
     </navContext.Provider>
   );
 }
