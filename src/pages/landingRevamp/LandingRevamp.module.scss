@@ -80,31 +80,6 @@ body {
 .wrapper {
   width: 100%;
   position: relative;
-  // Hidden by default (behind preloader) — ink-spread mask reveals it
-  mask-image: linear-gradient(transparent, transparent);
-  -webkit-mask-image: linear-gradient(transparent, transparent);
-
-  &.revealed {
-    mask-image: none;
-    -webkit-mask-image: none;
-  }
-
-  &.mask {
-    mask-image: url("/videos/ink-spread-5.webp");
-    -webkit-mask-image: url("/videos/ink-spread-5.webp");
-    mask-repeat: no-repeat;
-    -webkit-mask-repeat: no-repeat;
-    mask-size: cover;
-    -webkit-mask-size: cover;
-    mask-position: center;
-    -webkit-mask-position: center;
-    height: 100svh;
-  }
-
-  &.pointerNoneEvent {
-    pointer-events: none;
-    position: fixed;
-  }
 }
 
 // ─── Canvas-based sprite animation ───────────────────────────────────────────

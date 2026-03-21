@@ -29,19 +29,9 @@ export default function Homepage({
     <div>
       <BreadCrumb data={breadcrumbJsonLd} />
       {!removeGif && (
-        <div style={{ zIndex: 1000, position: "relative" }}>
-          <DrawingPreloader onEnter={() => playMusic?.()} />
-        </div>
+        <DrawingPreloader onEnter={() => playMusic?.()} />
       )}
-      <div
-        style={{
-          zIndex: 100,
-          position: "relative",
-          pointerEvents: "auto",
-        }}
-      >
-        <LandingRevamp goToPage={goToPage} />
-      </div>
+      <LandingRevamp goToPage={goToPage} />
     </div>
   );
 }

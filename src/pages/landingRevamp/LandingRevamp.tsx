@@ -67,9 +67,7 @@ export default function LandingRevamp({
   const cacheType = useOverlayStore((s) => s.cacheType);
   const setLandingReady = useOverlayStore((s) => s.setLandingReady);
   const setSpritesLoaded = useOverlayStore((s) => s.setSpritesLoaded);
-  const overlayIsActive = useOverlayStore((s) => s.isActive);
   const removeGif = useOverlayStore((s) => s.removeGif);
-  const setRemoveGif = useOverlayStore((s) => s.setRemoveGif);
 
   // ─── Countdown timer ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -359,30 +357,14 @@ export default function LandingRevamp({
     return () => document.body.classList.remove("scroll-locked");
   }, [removeGif]);
 
-  // ─── Ink-spread mask transition (3s for full animation) ────────────────────
-  const transitionStartedRef = useRef(false);
-  useEffect(() => {
-    if (overlayIsActive && !transitionStartedRef.current && !removeGif) {
-      transitionStartedRef.current = true;
-      setTimeout(() => setRemoveGif(), 3000);
-    }
-  }, [overlayIsActive, removeGif, setRemoveGif]);
-
   return (
     <>
-      {/* Navbar outside masked wrapper so it's always clickable */}
+      {/* Navbar outside wrapper so it's always clickable */}
       <Suspense fallback={null}>
         <Navbar />
       </Suspense>
 
-      <main
-        className={`${styles.wrapper} ${
-          removeGif ? styles.revealed : ""
-        } ${!removeGif ? styles.pointerNoneEvent : ""} ${
-          overlayIsActive && !removeGif ? styles.mask : ""
-        }`}
-        ref={wrapperRef}
-      >
+      <main className={styles.wrapper} ref={wrapperRef}>
 
       {/* ─── Social Links (LEFT side) ──────────────────────────────────── */}
       <div className={styles.socialLinksOverlay} ref={socialLinksRef}>
