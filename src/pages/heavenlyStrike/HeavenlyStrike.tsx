@@ -46,7 +46,7 @@ export default function HeavenlyStrike() {
       <EventLayout
       day="DAY 1"
       date="1st April 2026"
-      title="THE HEAVENLY STRIKE"
+      title="THE LAST STANDING RONIN"
       tagline="One Breath. One Cut."
       type="BATTLE"
       accent="#ff2200"

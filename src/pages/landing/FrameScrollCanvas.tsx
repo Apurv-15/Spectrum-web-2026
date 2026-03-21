@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from "react";
-import Lenis from "@studio-freight/lenis";
+import Lenis from "lenis";
 import { gsap } from "gsap";
 import styles from "./FrameScrollCanvas.module.scss";
 
@@ -43,7 +43,7 @@ export default function FrameScrollCanvas() {
     // Update frame index based on scroll position
     const updateFrameIndex = useCallback(() => {
         if (!lenisRef.current || !canvasRef.current) return;
-        const scrollY = lenisRef.current.scroll?.actual || 0;
+        const scrollY = lenisRef.current.scroll || 0;
         const maxScroll = (totalFrames * 50) - window.innerHeight; // Match scrollSection height
         const scrollProgress = Math.min(Math.max(0, scrollY / maxScroll), 1);
         const newIndex = Math.min(Math.floor(scrollProgress * totalFrames), totalFrames - 1);
@@ -86,7 +86,7 @@ export default function FrameScrollCanvas() {
         const handleWheel = (e: WheelEvent) => {
             if (!lenisRef.current || imagesLoaded < totalFrames) return;
 
-            const currentScroll = lenisRef.current.scroll?.actual || 0;
+            const currentScroll = lenisRef.current.scroll || 0;
             const maxScroll = (totalFrames * 50) - window.innerHeight; // Match scrollSection height
 
             // Accumulate delta to detect intent

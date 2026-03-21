@@ -4,7 +4,7 @@ import styles from "./LandingRevamp.module.scss";
 import { useMainHamStore } from "../../utils/store";
 import useOverlayStore from "../../utils/store";
 
-import Lenis from "@studio-freight/lenis";
+import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
