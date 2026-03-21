@@ -196,13 +196,29 @@ export default function FrameScrollCanvas() {
             const img = imageCache.get(path);
 
             if (img && img.complete) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                const fw = 1024;
+                const fh = 576;
+                const cw = canvas.width;
+                const ch = canvas.height;
+                const scale = Math.min(cw / fw, ch / fh);
+                const dx = (cw - fw * scale) / 2;
+                const dy = (ch - fh * scale) / 2;
+
+                ctx.clearRect(0, 0, cw, ch);
+                ctx.drawImage(img, dx, dy, fw * scale, fh * scale);
             } else if (img) {
                 img.onload = () => {
                     if (!ctx || !canvas) return;
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const fw = 1024;
+                    const fh = 576;
+                    const cw = canvas.width;
+                    const ch = canvas.height;
+                    const scale = Math.min(cw / fw, ch / fh);
+                    const dx = (cw - fw * scale) / 2;
+                    const dy = (ch - fh * scale) / 2;
+
+                    ctx.clearRect(0, 0, cw, ch);
+                    ctx.drawImage(img, dx, dy, fw * scale, fh * scale);
                 };
             }
         }

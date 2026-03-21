@@ -97,7 +97,21 @@ export default function LandingRevamp({
 
     const cw = canvas.width;
     const ch = canvas.height;
-    const scale = Math.max(cw / fw, ch / fh);
+    
+    const coverScale = Math.max(cw / fw, ch / fh);
+    const containScale = Math.min(cw / fw, ch / fh);
+
+    // Smoothly transition from cover to contain in the last frames (sprite sheet 12)
+    let scale = coverScale;
+    const transitionStart = 180; 
+    const transitionEnd = 210;   
+    
+    if (fi > transitionStart) {
+      const t = Math.min(1, (fi - transitionStart) / (transitionEnd - transitionStart));
+      // Apply smooth transition
+      scale = lerp(coverScale, containScale, t);
+    }
+
     const dx = (cw - fw * scale) / 2;
     const dy = (ch - fh * scale) / 2;
 
@@ -127,7 +141,7 @@ export default function LandingRevamp({
 
   // ─── Preload all sprites (Robust Singleton) ─────────────────────────────
   useEffect(() => {
-    const isMobile = window.innerWidth < 768;
+    const isMobile = window.innerWidth < 1024 || (navigator.maxTouchPoints > 0 && window.innerWidth < 1366);
     const currentType = isMobile ? 'mobile' : 'desktop';
 
     // 1. Invalidate Global Promise if the environment changed (resize)
@@ -163,18 +177,14 @@ export default function LandingRevamp({
           const fw = isMobile ? MOBILE_W : DESKTOP_W;
           const fh = isMobile ? MOBILE_H : DESKTOP_H;
 
-          // Fetch all in parallel
-          const blobs = await Promise.all(
-            Array.from({ length: SPRITE_COUNT }, (_, i) => 
-              fetch(getSpritePath(i + 1, isMobile), { cache: 'force-cache' })
-                .then(r => r.ok ? r.blob() : Promise.reject(`HTTP ${r.status}`))
-            )
-          );
-
-          // Decode frames one by one
+          // Sequential fetch and decode to save memory on mobile/tablets
           const newBitmaps: ImageBitmap[][] = [];
           for (let si = 0; si < SPRITE_COUNT; si++) {
-            const sheetBitmap = await createImageBitmap(blobs[si]);
+            const response = await fetch(getSpritePath(si + 1, isMobile), { cache: 'force-cache' });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const blob = await response.blob();
+            const sheetBitmap = await createImageBitmap(blob);
+            
             const frames: ImageBitmap[] = [];
             for (let fi = 0; fi < FRAMES_PER_SPRITE; fi++) {
               const col = fi % GRID_COLS;
@@ -193,6 +203,9 @@ export default function LandingRevamp({
             newBitmaps[si] = frames;
             // Update store progress for preloader
             useOverlayStore.getState().setSpritesLoaded(si + 1);
+            
+            // Brief pause to keep main thread responsive during load
+            await new Promise(r => setTimeout(r, 0));
           }
 
           useOverlayStore.getState().setBitMapCache(newBitmaps, currentType);
@@ -244,7 +257,7 @@ export default function LandingRevamp({
     const handleResize = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2); // Cap at 2x for memory safety on high-res iPads
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
       drawFrame(Math.round(currentFrameRef.current));
