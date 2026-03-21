@@ -71,6 +71,18 @@ export default function LandingRevamp({
   const overlayIsActive = useOverlayStore((s) => s.isActive);
   const removeGif = useOverlayStore((s) => s.removeGif);
   const setRemoveGif = useOverlayStore((s) => s.setRemoveGif);
+  const resetRemoveGif = useOverlayStore((s) => s.resetRemoveGif);
+
+  const isReturningRef = useRef(false);
+
+  useEffect(() => {
+    const hasSeenIntro = sessionStorage.getItem("introPlayed") === "true";
+    if (hasSeenIntro) {
+      isReturningRef.current = true;
+    } else {
+      resetRemoveGif();
+    }
+  }, [resetRemoveGif]);
 
   // ─── Countdown timer ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -316,6 +328,29 @@ export default function LandingRevamp({
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
+
+  // ─── Returning user: jump to scroll end ───────────────────────────────────
+  useEffect(() => {
+    if (isReturningRef.current && allLoaded) {
+      const section = scrollSectionRef.current;
+      if (section) {
+        const timer = setTimeout(() => {
+          const maxScroll = section.offsetHeight - window.innerHeight;
+          window.scrollTo(0, maxScroll);
+          if (lenisRef.current) lenisRef.current.scrollTo(maxScroll, { immediate: true });
+          requestAnimationFrame(() => {
+            targetFrameRef.current = TOTAL_FRAMES - 1;
+            currentFrameRef.current = TOTAL_FRAMES - 1;
+            setIsMainHamOpen(true);
+            handleScroll();
+            drawFrame(TOTAL_FRAMES - 1);
+            isReturningRef.current = false;
+          });
+        }, 120);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [allLoaded, setIsMainHamOpen, handleScroll]);
 
   // ─── GSAP ScrollTrigger fade-outs (matching original) ─────────────────────
   useEffect(() => {
