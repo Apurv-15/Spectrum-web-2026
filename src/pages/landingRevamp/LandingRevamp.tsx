@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState, useCallback, lazy, Suspense } from "react";
 import styles from "./LandingRevamp.module.scss";
-
 import { useMainHamStore } from "../../utils/store";
 import useOverlayStore from "../../utils/store";
-
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -17,7 +15,7 @@ gsap.registerPlugin(ScrollTrigger);
 // ─── Sprite sheet configuration ───────────────────────────────────────────────
 const TOTAL_FRAMES = 240;
 const SPRITE_COUNT = 12;
-const FRAMES_PER_SPRITE = 20; // frames per sprite sheet
+const FRAMES_PER_SPRITE = 20;
 const GRID_COLS = 4;
 
 const DESKTOP_W = 1024;
@@ -32,7 +30,9 @@ const getSpritePath = (i: number, isMobile: boolean) =>
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-// ─── Module-level cache & lock (survives component remounts) ──────────────
+const TARGET_DATE = new Date("2026-04-01T00:00:00+05:30");
+
+// ─── Module-level cache & lock ──────────────────────────────────────────────
 let globalLoadPromise: Promise<void> | null = null;
 
 export default function LandingRevamp({
@@ -42,7 +42,8 @@ export default function LandingRevamp({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scrollSectionRef = useRef<HTMLDivElement>(null);
-  const bitmapsRef = useRef<ImageBitmap[][]>([]); 
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const bitmapsRef = useRef<ImageBitmap[][]>([]);
   const currentFrameRef = useRef(0);
   const targetFrameRef = useRef(0);
   const rafIdRef = useRef<number>(0);
@@ -50,8 +51,14 @@ export default function LandingRevamp({
   const isMobileRef = useRef(false);
   const lenisRef = useRef<Lenis | null>(null);
 
-  const [allLoaded, setAllLoaded] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  // Refs for GSAP scroll-triggered fade-outs
+  const registerButtonRef = useRef<HTMLDivElement>(null);
+  const dateCountdownRef = useRef<HTMLDivElement>(null);
+  const socialLinksRef = useRef<HTMLDivElement>(null);
+  const logoContainerRef = useRef<HTMLDivElement>(null);
+
+  const [, setAllLoaded] = useState(false);
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
 
   const isMainHamOpen = useMainHamStore((s) => s.isMainHamOpen);
   const setIsMainHamOpen = useMainHamStore((s) => s.setMainHamOpen);
@@ -63,19 +70,28 @@ export default function LandingRevamp({
   const overlayIsActive = useOverlayStore((s) => s.isActive);
   const removeGif = useOverlayStore((s) => s.removeGif);
   const setRemoveGif = useOverlayStore((s) => s.setRemoveGif);
-  const resetRemoveGif = useOverlayStore((s) => s.resetRemoveGif);
 
-  const isReturningRef = useRef(false);
-  
+  // ─── Countdown timer ────────────────────────────────────────────────────────
   useEffect(() => {
-    const hasSeenIntro = sessionStorage.getItem("introPlayed") === "true";
-    if (hasSeenIntro) {
-      isReturningRef.current = true;
-    } else {
-      resetRemoveGif();
-    }
-  }, [resetRemoveGif]);
+    const update = () => {
+      const now = new Date();
+      const diff = TARGET_DATE.getTime() - now.getTime();
+      if (diff <= 0) {
+        setCountdown({ days: 0, hours: 0, minutes: 0 });
+        return;
+      }
+      setCountdown({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / (1000 * 60)) % 60),
+      });
+    };
+    update();
+    const id = setInterval(update, 60000);
+    return () => clearInterval(id);
+  }, []);
 
+  // ─── Draw frame ──────────────────────────────────────────────────────────────
   const drawFrame = (frameIndex: number) => {
     const canvas = canvasRef.current;
     if (!canvas || !isReadyRef.current) return;
@@ -105,12 +121,14 @@ export default function LandingRevamp({
     ctx.drawImage(bitmap, dx, dy, fw * scale, fh * scale);
   };
 
+  // ─── Scroll handler ─────────────────────────────────────────────────────────
   const handleScroll = useCallback(() => {
     const section = scrollSectionRef.current;
     if (!section) return;
     const scrollTop = window.scrollY;
     const maxScroll = section.offsetHeight - window.innerHeight;
-    const fraction = maxScroll > 0 ? Math.min(1, Math.max(0, scrollTop / maxScroll)) : 0;
+    const fraction =
+      maxScroll > 0 ? Math.min(1, Math.max(0, scrollTop / maxScroll)) : 0;
     const animationFraction = Math.min(1, fraction / 0.9);
     targetFrameRef.current = animationFraction * (TOTAL_FRAMES - 1);
 
@@ -122,25 +140,25 @@ export default function LandingRevamp({
     } else if (fraction < 0.85) {
       if (isMainHamOpen) setIsMainHamOpen(false);
     }
-    setIsScrolled(fraction > 0.05 && fraction < 0.95);
   }, [isMainHamOpen, setIsMainHamOpen]);
 
-  // ─── Preload all sprites (Robust Singleton) ─────────────────────────────
+  // ─── Preload all sprites (Robust Singleton) ─────────────────────────────────
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
-    const currentType = isMobile ? 'mobile' : 'desktop';
+    const currentType = isMobile ? "mobile" : "desktop";
 
-    // 1. Invalidate Global Promise if the environment changed (resize)
     if (globalLoadPromise && cacheType && cacheType !== currentType) {
-      globalLoadPromise = null; 
+      globalLoadPromise = null;
       isReadyRef.current = false;
     }
 
-    // 2. Local already loaded & correct type?
     if (isReadyRef.current && cacheType === currentType) return;
 
-    // 3. Check Store Cache
-    if (bitMapCache && bitMapCache.length === SPRITE_COUNT && cacheType === currentType) {
+    if (
+      bitMapCache &&
+      bitMapCache.length === SPRITE_COUNT &&
+      cacheType === currentType
+    ) {
       bitmapsRef.current = bitMapCache;
       isReadyRef.current = true;
       setAllLoaded(true);
@@ -154,24 +172,23 @@ export default function LandingRevamp({
       return;
     }
 
-    // 4. Start/Join Global Promise
     if (!globalLoadPromise) {
       globalLoadPromise = (async () => {
         try {
-          // Update ref for drawFrame to use correct dimensions
-          isMobileRef.current = isMobile; 
+          isMobileRef.current = isMobile;
           const fw = isMobile ? MOBILE_W : DESKTOP_W;
           const fh = isMobile ? MOBILE_H : DESKTOP_H;
 
-          // Fetch all in parallel
           const blobs = await Promise.all(
-            Array.from({ length: SPRITE_COUNT }, (_, i) => 
-              fetch(getSpritePath(i + 1, isMobile), { cache: 'force-cache' })
-                .then(r => r.ok ? r.blob() : Promise.reject(`HTTP ${r.status}`))
+            Array.from({ length: SPRITE_COUNT }, (_, i) =>
+              fetch(getSpritePath(i + 1, isMobile), {
+                cache: "force-cache",
+              }).then((r) =>
+                r.ok ? r.blob() : Promise.reject(`HTTP ${r.status}`)
+              )
             )
           );
 
-          // Decode frames one by one
           const newBitmaps: ImageBitmap[][] = [];
           for (let si = 0; si < SPRITE_COUNT; si++) {
             const sheetBitmap = await createImageBitmap(blobs[si]);
@@ -185,13 +202,12 @@ export default function LandingRevamp({
                 row * fh,
                 fw,
                 fh,
-                { colorSpaceConversion: 'none' }
+                { colorSpaceConversion: "none" }
               );
               frames.push(bm);
             }
             sheetBitmap.close();
             newBitmaps[si] = frames;
-            // Update store progress for preloader
             useOverlayStore.getState().setSpritesLoaded(si + 1);
           }
 
@@ -204,7 +220,6 @@ export default function LandingRevamp({
       })();
     }
 
-    // 4. Component instance sync
     let cancelled = false;
     globalLoadPromise.then(() => {
       if (cancelled) return;
@@ -221,15 +236,22 @@ export default function LandingRevamp({
       }
     });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [bitMapCache, setAllLoaded, setLandingReady, setSpritesLoaded, handleScroll]);
 
+  // ─── Animation loop (lerp 0.15 for smoother feel) ──────────────────────────
   useEffect(() => {
     let lastDrawnFrame = -1;
     const tick = () => {
       rafIdRef.current = requestAnimationFrame(tick);
       if (!isReadyRef.current) return;
-      currentFrameRef.current = lerp(currentFrameRef.current, targetFrameRef.current, 0.2);
+      currentFrameRef.current = lerp(
+        currentFrameRef.current,
+        targetFrameRef.current,
+        0.15
+      );
       const rounded = Math.round(currentFrameRef.current);
       if (rounded !== lastDrawnFrame) {
         lastDrawnFrame = rounded;
@@ -240,11 +262,12 @@ export default function LandingRevamp({
     return () => cancelAnimationFrame(rafIdRef.current);
   }, []);
 
+  // ─── Canvas resize (DPR capped at 2) ──────────────────────────────────────
   useEffect(() => {
     const handleResize = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
       drawFrame(Math.round(currentFrameRef.current));
@@ -254,147 +277,259 @@ export default function LandingRevamp({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // ─── Lenis smooth scroll ──────────────────────────────────────────────────
   useEffect(() => {
     lenisRef.current = new Lenis({
-      duration: 2,
+      duration: 1.8,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      wheelMultiplier: 1.1,
+      wheelMultiplier: 1.5,
     });
     const raf = (time: number) => {
       lenisRef.current?.raf(time);
       requestAnimationFrame(raf);
     };
     requestAnimationFrame(raf);
+
+    lenisRef.current.on("scroll", ScrollTrigger.update);
+
     return () => lenisRef.current?.destroy();
   }, []);
 
+  // ─── Scroll listener ─────────────────────────────────────────────────────
   useEffect(() => {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
+  // ─── GSAP ScrollTrigger fade-outs (matching original) ─────────────────────
   useEffect(() => {
-    if (isReturningRef.current && allLoaded) {
-      const section = scrollSectionRef.current;
-      if (section) {
-        const timer = setTimeout(() => {
-          const maxScroll = section.offsetHeight - window.innerHeight;
-          window.scrollTo(0, maxScroll);
-          if (lenisRef.current) lenisRef.current.scrollTo(maxScroll, { immediate: true });
-          requestAnimationFrame(() => {
-            targetFrameRef.current = TOTAL_FRAMES - 1;
-            currentFrameRef.current = TOTAL_FRAMES - 1;
-            setIsMainHamOpen(true);
-            handleScroll();
-            drawFrame(TOTAL_FRAMES - 1);
-            isReturningRef.current = false;
-          });
-        }, 120);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [allLoaded, setIsMainHamOpen, handleScroll]);
+    if (!removeGif) return;
 
-  useEffect(() => {
-    if (!allLoaded) return;
-    let isAnimating = false;
-    let animationTween: gsap.core.Tween | null = null;
-    let wheelAccumulator = 0;
-    const WHEEL_THRESHOLD = 10;
-    const handleWheel = (e: WheelEvent) => {
-      if (!lenisRef.current) return;
-      const currentScroll = lenisRef.current.scroll || 0;
-      const maxScroll = scrollSectionRef.current ? scrollSectionRef.current.offsetHeight - window.innerHeight : 0;
-      wheelAccumulator += Math.abs(e.deltaY);
-      if (currentScroll < maxScroll && wheelAccumulator > WHEEL_THRESHOLD) {
-        const targetScroll = e.deltaY > 0 ? maxScroll : 0;
-        if (Math.abs(currentScroll - targetScroll) < 50) return;
-        if (animationTween && ((e.deltaY > 0 && (animationTween.vars as any).scroll < currentScroll) || (e.deltaY < 0 && (animationTween.vars as any).scroll > currentScroll))) {
-          animationTween.kill();
-          isAnimating = false;
-          wheelAccumulator = 0;
-        }
-        if (!isAnimating) {
-          isAnimating = true;
-          const proxy = { value: currentScroll };
-          animationTween = gsap.to(proxy, {
-            value: targetScroll,
-            duration: 9,
-            ease: "power1.inOut",
-            onUpdate: () => { lenisRef.current?.scrollTo(proxy.value, { immediate: true }); },
-            onComplete: () => {
-              isAnimating = false;
-              animationTween = null;
-              wheelAccumulator = 0;
-            },
-          });
-        }
-      }
-      setTimeout(() => { wheelAccumulator = 0; }, 150);
-    };
-    window.addEventListener("wheel", handleWheel, { passive: true });
-    return () => {
-      window.removeEventListener("wheel", handleWheel);
-      animationTween?.kill();
-    };
-  }, [allLoaded]);
+    const anims: gsap.core.Tween[] = [];
 
-  useEffect(() => {
-    if (removeGif) {
-      document.body.style.overflow = "";
-      document.body.style.height = "";
-    } else {
-      window.scrollTo(0, 0);
-      document.body.style.overflow = "hidden";
-      document.body.style.height = "100svh";
-    }
+    const fadeOut = (
+      el: HTMLElement | null,
+      start: string,
+      end: string
+    ) => {
+      if (!el) return;
+      const anim = gsap.fromTo(
+        el,
+        { autoAlpha: 1 },
+        {
+          autoAlpha: 0,
+          ease: "power2.inOut",
+          scrollTrigger: {
+            trigger: wrapperRef.current,
+            start,
+            end,
+            scrub: true,
+          },
+        }
+      );
+      anims.push(anim);
+    };
+
+    const timer = setTimeout(() => {
+      fadeOut(registerButtonRef.current, "50vh", "+=145vh");
+      fadeOut(dateCountdownRef.current, "0vh", "+=200vh");
+      fadeOut(socialLinksRef.current, "50vh", "+=200vh");
+      fadeOut(logoContainerRef.current, "50vh", "+=200vh");
+      ScrollTrigger.refresh();
+    }, 200);
+
     return () => {
-      document.body.style.overflow = "";
-      document.body.style.height = "";
+      clearTimeout(timer);
+      anims.forEach((a) => {
+        a.scrollTrigger?.kill();
+        a.kill();
+      });
     };
   }, [removeGif]);
 
+  // ─── Body scroll lock during preloader ─────────────────────────────────────
+  useEffect(() => {
+    if (removeGif) {
+      document.body.classList.remove("scroll-locked");
+      document.scrollingElement?.scrollTo({ top: 0 });
+    } else {
+      document.body.classList.add("scroll-locked");
+    }
+    return () => document.body.classList.remove("scroll-locked");
+  }, [removeGif]);
+
+  // ─── Ink-spread mask transition (3s for full animation) ────────────────────
   const transitionStartedRef = useRef(false);
   useEffect(() => {
     if (overlayIsActive && !transitionStartedRef.current && !removeGif) {
       transitionStartedRef.current = true;
-      setTimeout(() => setRemoveGif(), 1500);
+      setTimeout(() => setRemoveGif(), 3000);
     }
   }, [overlayIsActive, removeGif, setRemoveGif]);
 
   return (
-    <div
-      className={`${styles.wrapper} ${overlayIsActive && !removeGif ? styles.mask : ""}`}
-      style={{
-        maskImage: removeGif ? "none" : undefined,
-        WebkitMaskImage: removeGif ? "none" : undefined,
-      }}
-    >
-      <Navbar />
-      <div className={styles.scrollSection} ref={scrollSectionRef}>
-        <div className={styles.canvasContainer}>
-          <canvas ref={canvasRef} className={`${styles.mainCanvas} ${allLoaded ? styles.visible : ""}`} />
+    <>
+      {/* Navbar outside masked wrapper so it's always clickable */}
+      <Suspense fallback={null}>
+        <Navbar />
+      </Suspense>
+
+      <main
+        className={`${styles.wrapper} ${
+          removeGif ? styles.revealed : ""
+        } ${!removeGif ? styles.pointerNoneEvent : ""} ${
+          overlayIsActive && !removeGif ? styles.mask : ""
+        }`}
+        ref={wrapperRef}
+      >
+
+      {/* ─── Social Links (LEFT side) ──────────────────────────────────── */}
+      <div className={styles.socialLinksOverlay} ref={socialLinksRef}>
+        {[
+          {
+            href: "https://x.com/gdgvitmumbai",
+            icon: "/svgs/landing/x.svg",
+            lamp: "/svgs/landing/xLamp.svg",
+            cls: styles.xDiv,
+            iconCls: styles.xIcon,
+          },
+          {
+            href: "https://www.instagram.com/gdg.vitm/",
+            icon: "/svgs/landing/insta.svg",
+            lamp: "/svgs/landing/instaLamp.svg",
+            cls: styles.instaDiv,
+            iconCls: styles.instaIcon,
+          },
+          {
+            href: "https://www.linkedin.com/company/gdgvitmumbai/",
+            icon: "/svgs/landing/linkden.svg",
+            lamp: "/svgs/landing/linkdenLamp.svg",
+            cls: styles.linkdenDiv,
+            iconCls: styles.linkdenIcon,
+          },
+        ].map((s) => (
+          <div className={`${styles.socialLinkItem} ${s.cls}`} key={s.href}>
+            <a href={s.href} target="_blank" rel="noopener noreferrer">
+              <img
+                src={s.icon}
+                alt=""
+                className={`${styles.socialIcon} ${s.iconCls}`}
+              />
+              <img src={s.lamp} alt="" className={styles.socialLamp} />
+            </a>
+          </div>
+        ))}
+      </div>
+
+      {/* ─── Logo container (RIGHT side, above register button) ────────── */}
+      <div className={styles.logoContainer} ref={logoContainerRef}>
+        <img
+          src="/images/branding/gdg-spectrum-banner.png"
+          className={styles.profileBanner}
+          alt="GDG Spectrum banner"
+        />
+        <img
+          src="/images/branding/gdg-spectrum-logo.webp"
+          className={styles.logo}
+          alt="GDG Logo for Spectrum"
+        />
+      </div>
+
+      {/* ─── Countdown Timer (RIGHT side, near sound toggle) ──────────── */}
+      <div className={styles.dateCountdown} ref={dateCountdownRef}>
+        <div className={`${styles.daysLeft} ${styles.timeLeft}`}>
+          <div className={styles.days}>
+            {countdown.days >= 10 ? (
+              <span>{countdown.days}</span>
+            ) : (
+              <span>0{countdown.days}</span>
+            )}
+          </div>
+          DAYS
+        </div>
+        <div>:</div>
+        <div className={`${styles.hoursLeft} ${styles.timeLeft}`}>
+          <div className={styles.hours}>
+            {countdown.hours >= 10 ? (
+              <span>{countdown.hours}</span>
+            ) : (
+              <span>0{countdown.hours}</span>
+            )}
+          </div>
+          HOURS
+        </div>
+        <div>:</div>
+        <div className={`${styles.minutesLeft} ${styles.timeLeft}`}>
+          <div className={styles.minutes}>
+            {countdown.minutes >= 10 ? (
+              <span>{countdown.minutes}</span>
+            ) : (
+              <span>0{countdown.minutes}</span>
+            )}
+          </div>
+          MINS
         </div>
       </div>
-      <div className={`${styles.menuSection} ${isMainHamOpen ? styles.revealed : ""}`}>
+
+      {/* ─── Register / Explore Events button (fixed, bottom-right) ────── */}
+      <div
+        className={styles.registerBtnContainer}
+        onClick={() => goToPage("/events")}
+        ref={registerButtonRef}
+      >
+        <img
+          src="/svgs/landing/registerBtn.svg"
+          className={styles.registerBtn}
+          alt="Explore Events"
+        />
+        <img
+          src="/svgs/landing/mobileRegisterBtn.svg"
+          className={styles.mobileRegisterBtn}
+          alt="Explore Events"
+        />
+        <div className={styles.registerBtnText}>Explore Events</div>
+      </div>
+
+      {/* ─── Scroll Section (Canvas) ───────────────────────────────────── */}
+      <div className={styles.scrollSection} ref={scrollSectionRef}>
+        <div className={styles.canvasContainer}>
+          <canvas ref={canvasRef} className={styles.mainCanvas} />
+        </div>
+      </div>
+
+      {/* ─── Main Menu (revealed at scroll end) ────────────────────────── */}
+      <div
+        className={`${styles.menuSection} ${
+          isMainHamOpen ? styles.revealed : ""
+        }`}
+      >
         <Suspense fallback={null}>
           <MainHam goToPage={goToPage} />
         </Suspense>
       </div>
+
+      {/* ─── Scroll Indicator ──────────────────────────────────────────── */}
       <div className={styles.contentOverlay}>
-        <div className={`${styles.scrollIndicator} ${isScrolled || !removeGif ? styles.hidden : ""}`}>
+        <div
+          className={`${styles.scrollIndicator} ${
+            !removeGif ? styles.hidden : ""
+          }`}
+        >
           <div className={styles.mouse}>
             <div className={styles.wheel}></div>
           </div>
           <span className={styles.scrollText}>Scroll Down</span>
         </div>
       </div>
+
+      {/* ─── About Us Section ──────────────────────────────────────────── */}
       <div className={styles.bottomContainer}>
         <Suspense fallback={null}>
           <AboutUs isBackBtn={false} />
         </Suspense>
       </div>
-    </div>
+    </main>
+    </>
   );
 }

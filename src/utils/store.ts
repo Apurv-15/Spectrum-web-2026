@@ -23,11 +23,9 @@ type overlayActive = {
   resetRemoveGif: () => void;
 };
 
-const isIntroPlayed = typeof window !== "undefined" ? sessionStorage.getItem("introPlayed") === "true" : false;
-
 const useOverlayStore = create<overlayActive>((set) => ({
-  isActive: isIntroPlayed,
-  removeGif: isIntroPlayed,
+  isActive: false,
+  removeGif: false,
   isLandingReady: false,
   preloaderProgress: 0,
   bitMapCache: null,

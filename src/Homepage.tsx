@@ -25,13 +25,10 @@ export default function Homepage({
   };
   const removeGif = useOverlayStore((state) => state.removeGif);
 
-  // Only show preloader if not removing GIF
-  const shouldRenderPreloader = !removeGif;
-
   return (
     <div>
       <BreadCrumb data={breadcrumbJsonLd} />
-      {shouldRenderPreloader && (
+      {!removeGif && (
         <div style={{ zIndex: 1000, position: "relative" }}>
           <DrawingPreloader onEnter={() => playMusic?.()} />
         </div>
@@ -43,9 +40,7 @@ export default function Homepage({
           pointerEvents: "auto",
         }}
       >
-        <LandingRevamp
-          goToPage={goToPage}
-        />
+        <LandingRevamp goToPage={goToPage} />
       </div>
     </div>
   );

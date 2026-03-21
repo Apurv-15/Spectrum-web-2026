@@ -37,10 +37,10 @@ export default function DrawingPreloader({
   className?: string;
   onEnter: () => void;
 }) {
-  const overlaySetActive = useOverlayStore((state: any) => state.setActive);
-  const isLandingReady = useOverlayStore((state: any) => state.isLandingReady);
-  const progress = useOverlayStore((state: any) => state.preloaderProgress);
-  const setGlobalProgress = useOverlayStore((state: any) => state.setPreloaderProgress);
+  const overlaySetActive = useOverlayStore((state) => state.setActive);
+  const isLandingReady = useOverlayStore((state) => state.isLandingReady);
+  const progress = useOverlayStore((state) => state.preloaderProgress);
+  const setGlobalProgress = useOverlayStore((state) => state.setPreloaderProgress);
   
   const [showEnterButton, setShowEnterButton] = useState(false);
   const circleRef = useRef<SVGCircleElement>(null);
@@ -228,18 +228,19 @@ export default function DrawingPreloader({
     if (hasEnteredRef.current) return;
     hasEnteredRef.current = true;
 
-    // Fade out and transition
-    const wrapper = svgContainerRef.current?.closest(".preloader-wrapper") as HTMLElement;
+    // Fade out preloader while ink-spread mask starts simultaneously
+    const wrapper = svgContainerRef.current?.closest(
+      ".preloader-wrapper"
+    ) as HTMLElement;
     if (wrapper) {
       wrapper.style.transition = "opacity 1.2s ease";
       wrapper.style.opacity = "0";
       wrapper.style.pointerEvents = "none";
     }
 
-    setTimeout(() => {
-      overlaySetActive(true);
-      onEnter();
-    }, 1200);
+    onEnter();
+    // Trigger ink-spread immediately — wrapper is hidden by default transparent mask
+    overlaySetActive();
   };
 
   return (
