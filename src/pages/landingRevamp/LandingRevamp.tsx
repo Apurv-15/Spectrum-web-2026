@@ -352,6 +352,73 @@ export default function LandingRevamp({
     }
   }, [allLoaded, setIsMainHamOpen, handleScroll]);
 
+  // ─── Auto-scroll on wheel (Cinematic jump to end) ──────────────────────────
+  useEffect(() => {
+    if (!allLoaded) return;
+    let isAnimating = false;
+    let animationTween: gsap.core.Tween | null = null;
+    let wheelAccumulator = 0;
+    const WHEEL_THRESHOLD = 10;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (!lenisRef.current) return;
+      const currentScroll = lenisRef.current.scroll || 0;
+      const maxScroll = scrollSectionRef.current
+        ? scrollSectionRef.current.offsetHeight - window.innerHeight
+        : 0;
+
+      wheelAccumulator += Math.abs(e.deltaY);
+
+      // If we haven't reached the bottom yet, trigger auto-scroll
+      if (currentScroll < maxScroll && wheelAccumulator > WHEEL_THRESHOLD) {
+        const targetScroll = e.deltaY > 0 ? maxScroll : 0;
+
+        // Don't restart if already very close
+        if (Math.abs(currentScroll - targetScroll) < 50) return;
+
+        // If user reverses direction, kill current animation
+        if (
+          animationTween &&
+          ((e.deltaY > 0 &&
+            (animationTween.vars as any).scroll < currentScroll) ||
+            (e.deltaY < 0 &&
+              (animationTween.vars as any).scroll > currentScroll))
+        ) {
+          animationTween.kill();
+          isAnimating = false;
+          wheelAccumulator = 0;
+        }
+
+        if (!isAnimating) {
+          isAnimating = true;
+          const proxy = { value: currentScroll };
+          animationTween = gsap.to(proxy, {
+            value: targetScroll,
+            duration: 9,
+            ease: "power1.inOut",
+            onUpdate: () => {
+              lenisRef.current?.scrollTo(proxy.value, { immediate: true });
+            },
+            onComplete: () => {
+              isAnimating = false;
+              animationTween = null;
+              wheelAccumulator = 0;
+            },
+          });
+        }
+      }
+      setTimeout(() => {
+        wheelAccumulator = 0;
+      }, 150);
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      animationTween?.kill();
+    };
+  }, [allLoaded]);
+
   // ─── GSAP ScrollTrigger fade-outs (matching original) ─────────────────────
   useEffect(() => {
     if (!removeGif) return;
@@ -414,7 +481,7 @@ export default function LandingRevamp({
   useEffect(() => {
     if (overlayIsActive && !transitionStartedRef.current && !removeGif) {
       transitionStartedRef.current = true;
-      setTimeout(() => setRemoveGif(), 3000);
+      setTimeout(() => setRemoveGif(), 1500);
     }
   }, [overlayIsActive, removeGif, setRemoveGif]);
 
