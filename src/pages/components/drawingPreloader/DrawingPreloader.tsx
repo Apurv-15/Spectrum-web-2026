@@ -1,6 +1,7 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useContext } from "react";
 import styles from "./DrawingPreloader.module.scss";
 import useOverlayStore from "../../../utils/store";
+import { navContext } from "../../../App";
 
 const baseImagesToPreload = [
   "/images/doors/Door1.webp",
@@ -35,20 +36,24 @@ export default function DrawingPreloader({
   const setGlobalProgress = useOverlayStore((s) => s.setPreloaderProgress);
 
   const [showEnterButton, setShowEnterButton] = useState(false);
+  const { playMusic } = useContext(navContext);
   const circleRef = useRef<SVGCircleElement>(null);
   const pctTextRef = useRef<SVGTextElement>(null);
   const svgContainerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const loadingStartedRef = useRef(false);
   const hasEnteredRef = useRef(false);
+  const cachedPathsRef = useRef<(Element | null)[]>([]);
 
-  // Initialize paths with stroke-dash animation
+  // Initialize paths and cache elements
   useEffect(() => {
     const svgContainer = svgContainerRef.current;
     if (!svgContainer) return;
 
+    const paths: (Element | null)[] = [];
     for (let i = 1; i <= TOTAL_PATHS; i++) {
       const el = svgContainer.querySelector(`#p${i}`);
+      paths[i] = el;
       if (!el) continue;
 
       if (el.tagName === "circle" || el.tagName === "CIRCLE") {
@@ -68,16 +73,17 @@ export default function DrawingPreloader({
       }
       (el as HTMLElement).style.transition = "";
     }
+    cachedPathsRef.current = paths;
   }, []);
 
-  // Animate paths based on progress
+  // Animate paths based on progress (Using cached elements for optimization)
   useEffect(() => {
     const normalized = progress / 100;
-    const svgContainer = svgContainerRef.current;
-    if (!svgContainer) return;
+    const paths = cachedPathsRef.current;
+    if (!paths.length) return;
 
     for (let i = 1; i <= TOTAL_PATHS; i++) {
-      const el = svgContainer.querySelector(`#p${i}`);
+      const el = paths[i];
       if (!el) continue;
 
       const pathStart = (i - 1) / TOTAL_PATHS;
@@ -91,24 +97,17 @@ export default function DrawingPreloader({
       }
 
       if (normalized >= pathEnd) {
-        el.setAttribute("stroke-dashoffset", "0");
-        (el as HTMLElement).style.transition =
-          "stroke-dashoffset 2s cubic-bezier(0.4,0,0.2,1)";
+        if (el.getAttribute("stroke-dashoffset") !== "0") {
+          el.setAttribute("stroke-dashoffset", "0");
+          (el as HTMLElement).style.transition = "stroke-dashoffset 2s cubic-bezier(0.4,0,0.2,1)";
+        }
       } else if (normalized >= pathStart) {
         const pathProg = (normalized - pathStart) / (pathEnd - pathStart);
         try {
-          const len = parseFloat(
-            el.getAttribute("stroke-dasharray") || "200"
-          );
-          el.setAttribute(
-            "stroke-dashoffset",
-            (len * (1 - pathProg)).toString()
-          );
-          (el as HTMLElement).style.transition =
-            "stroke-dashoffset 1s ease-out";
-        } catch {
-          /* skip */
-        }
+          const len = parseFloat(el.getAttribute("stroke-dasharray") || "200");
+          el.setAttribute("stroke-dashoffset", (len * (1 - pathProg)).toString());
+          (el as HTMLElement).style.transition = "stroke-dashoffset 0.8s ease-out";
+        } catch { /* skip */ }
       }
     }
   }, [progress]);
@@ -165,40 +164,62 @@ export default function DrawingPreloader({
 
     loadBatch(allImages);
 
+    // Background music auto-start logic
+    const attemptPlay = () => {
+      if (playMusic) {
+        playMusic();
+        document.removeEventListener("click", attemptPlay);
+        document.removeEventListener("touchstart", attemptPlay);
+      }
+    };
+
+    setTimeout(() => {
+      if (playMusic) playMusic();
+    }, 1000);
+
+    document.addEventListener("click", attemptPlay);
+    document.addEventListener("touchstart", attemptPlay);
+
     let displayProgress = 0;
     const interval = setInterval(() => {
       const spritesLoaded = useOverlayStore.getState().spritesLoaded;
       const combinedLoaded = imagesLoaded + spritesLoaded;
-      const totalCombinedAssets = totalAssets + 12;
-      const realProgress =
-        totalCombinedAssets > 0
-          ? (combinedLoaded / totalCombinedAssets) * 100
-          : 100;
-      const currentReady = useOverlayStore.getState().isLandingReady;
+      const totalCombinedAssets = totalAssets + 12; // 12 sprites handled by LandingRevamp
 
-      let target = realProgress;
-      if (target >= 99 && !currentReady) target = 99;
+      const realAssetProgress = totalCombinedAssets > 0 ? (combinedLoaded / totalCombinedAssets) * 100 : 100;
+      const currentLandingReady = useOverlayStore.getState().isLandingReady;
 
-      const jump = (target - displayProgress) * 0.25;
-      if (jump > 0) displayProgress += jump;
+      let target = realAssetProgress;
+      if (target >= 99 && !currentLandingReady) {
+        target = 99;
+      }
+
+      // Fast lerp for snappy progress
+      const jump = (target - displayProgress) * 0.35;
+      if (jump > 0) {
+        displayProgress += jump;
+      }
+
       if (displayProgress >= 99.9) displayProgress = 100;
 
       setGlobalProgress(displayProgress);
 
-      if (displayProgress >= 99.5 && currentReady) {
+      if (displayProgress >= 99.5 && currentLandingReady) {
         clearInterval(interval);
         setTimeout(() => {
           setGlobalProgress(100);
           setTimeout(() => setShowEnterButton(true), 400);
         }, 200);
       }
-    }, 32);
+    }, 16); // ~60fps for smoother visual movement
 
     return () => {
       clearInterval(interval);
       loadingStartedRef.current = false;
+      document.removeEventListener("click", attemptPlay);
+      document.removeEventListener("touchstart", attemptPlay);
     };
-  }, [setGlobalProgress, isLandingReady]);
+  }, [setGlobalProgress, isLandingReady, playMusic]);
 
   // ─── Enter handler ─────────────────────────────────────────────────────
   const handleEnter = () => {

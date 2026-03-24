@@ -84,10 +84,23 @@ export default function Events() {
   const containerRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useGSAP(() => {
     if (!bgRef.current || !containerRef.current) return;
+
+    // Animate timeline progress line based on scroll
+    gsap.to(progressRef.current, {
+      height: "100%",
+      ease: "none",
+      scrollTrigger: {
+        trigger: timelineRef.current,
+        start: "top center",
+        end: "bottom center",
+        scrub: true,
+      },
+    });
 
     // Background moves slowest
     gsap.to(bgRef.current, {
@@ -179,7 +192,9 @@ export default function Events() {
       </div>
 
       <div className={styles.timeline} ref={timelineRef}>
-        <div className={styles.timelineLine} />
+        <div className={styles.timelineLine}>
+          <div className={styles.timelineProgress} ref={progressRef} />
+        </div>
 
         {EVENTS.map((event, i) => (
           <div

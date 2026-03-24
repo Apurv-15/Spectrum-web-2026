@@ -5,6 +5,7 @@ import useOverlayStore from "./utils/store";
 import SoundToggle from "./pages/components/soundToggle/SoundToggle";
 import bgMusic from "/sounds/bg-music2.mp3";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 
 import Homepage from "./Homepage";
@@ -132,6 +133,7 @@ export default function App() {
         {currentPage === "about" && <AboutUs />}
       </Suspense>
       <Analytics />
+      <SpeedInsights />
     </navContext.Provider>
   );
 }

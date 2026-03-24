@@ -33,11 +33,11 @@ export default function mainHam({
           `url("/videos/dragon-reveal.webp?${timestamp}")`
         );
 
-        // Remove mask after 1.2s to prevent GIF loop while allowing slow draw to continue
+        // Remove mask after 1.8s to catch the end of the video before it loops
         const timer = setTimeout(() => {
           element.style.setProperty("mask-image", "none");
           element.style.setProperty("-webkit-mask-image", "none");
-        }, 1200);
+        }, 1800);
         return () => clearTimeout(timer);
       } else {
         dragonRef.current.classList.remove(styles.hamOpen);
