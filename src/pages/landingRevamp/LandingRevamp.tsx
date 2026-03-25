@@ -5,6 +5,7 @@ import useOverlayStore from "../../utils/store";
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { isTouchDevice } from "../../utils/debounce";
 
 const Navbar = lazy(() => import("../components/navbar/Navbar"));
 const MainHam = lazy(() => import("../components/mainHam/mainHam"));
@@ -289,12 +290,13 @@ export default function LandingRevamp({
     return () => cancelAnimationFrame(rafIdRef.current);
   }, []);
 
-  // ─── Canvas resize (DPR capped at 2) ──────────────────────────────────────
+  // ─── Canvas resize (DPR capped at 1 on mobile, 2 on desktop) ─────────────
   useEffect(() => {
     const handleResize = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const isMobile = window.innerWidth < 768;
+      const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
       drawFrame(Math.round(currentFrameRef.current));
@@ -306,21 +308,30 @@ export default function LandingRevamp({
 
   // ─── Lenis smooth scroll ──────────────────────────────────────────────────
   useEffect(() => {
+    // Disable Lenis on touch/mobile devices — native scroll is sufficient
+    // and smooth scroll adds significant CPU overhead that can crash mobile browsers.
+    if (isTouchDevice()) return;
+
     lenisRef.current = new Lenis({
       duration: 1.8,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       wheelMultiplier: 1.5,
     });
+
+    let lenisRafId: number;
     const raf = (time: number) => {
       lenisRef.current?.raf(time);
-      requestAnimationFrame(raf);
+      lenisRafId = requestAnimationFrame(raf);
     };
-    requestAnimationFrame(raf);
+    lenisRafId = requestAnimationFrame(raf);
 
     lenisRef.current.on("scroll", ScrollTrigger.update);
 
-    return () => lenisRef.current?.destroy();
+    return () => {
+      cancelAnimationFrame(lenisRafId);
+      lenisRef.current?.destroy();
+    };
   }, []);
 
   // ─── Scroll listener ─────────────────────────────────────────────────────

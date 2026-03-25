@@ -6,6 +6,7 @@ import styles from "./Events.module.scss";
 import BackButton from "../components/backButton/BackButton";
 import { navContext } from "../../App";
 import EventHouse from "../components/eventHouse/EventHouse";
+import { isTouchDevice } from "../../utils/debounce";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -86,6 +87,7 @@ export default function Events() {
   const timelineRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const isMobile = isTouchDevice();
 
   useGSAP(() => {
     if (!bgRef.current || !containerRef.current) return;
@@ -152,7 +154,7 @@ export default function Events() {
       
       {/* Environmental Animation Layer - Sakura & Lanterns */}
       <div className={styles.particleContainer}>
-        {[...Array(25)].map((_, i) => (
+        {[...Array(isMobile ? 10 : 25)].map((_, i) => (
           <div
             key={`sakura-${i}`}
             className={styles.sakura}
@@ -167,7 +169,7 @@ export default function Events() {
           />
         ))}
 
-        {[...Array(6)].map((_, i) => (
+        {[...Array(isMobile ? 2 : 6)].map((_, i) => (
           <div
             key={`lantern-${i}`}
             className={styles.driftingLantern}

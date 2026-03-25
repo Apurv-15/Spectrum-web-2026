@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import EventLayout from "../components/eventLayout/EventLayout";
 import styles from "./SamuraiBackground.module.scss";
+import { isTouchDevice } from "../../utils/debounce";
 
 const SamuraiBackground = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -21,6 +22,8 @@ const SamuraiBackground = () => {
         scrub: true,
       },
     });
+
+    const isMobile = isTouchDevice();
 
     // Function to create drifting particles (petals, embers, ash)
     const createParticles = (className: string, count: number, direction: 'up' | 'down') => {
@@ -72,21 +75,23 @@ const SamuraiBackground = () => {
     };
 
     // Create different particle types
-    createParticles(styles.petal, 20, 'down'); // Falling petals
-    createParticles(styles.ember, 40, 'up');   // More rising embers
-    createParticles(styles.ash, 60, 'up');     // Doubled ash count
+    createParticles(styles.petal, isMobile ? 8 : 20, 'down'); // Falling petals
+    createParticles(styles.ember, isMobile ? 15 : 40, 'up');   // More rising embers
+    createParticles(styles.ash, isMobile ? 20 : 60, 'up');     // Doubled ash count
     
-    // Add a flickering effect specifically for embers
-    const embers = particlesRef.current?.querySelectorAll(`.${styles.ember}`);
-    embers?.forEach(ember => {
-      gsap.to(ember, {
-        opacity: 0.4,
-        repeat: -1,
-        yoyo: true,
-        duration: 0.2 + Math.random() * 0.3,
-        ease: "sine.inOut"
+    // Add a flickering effect specifically for embers (skip on mobile to save CPU)
+    if (!isMobile) {
+      const embers = particlesRef.current?.querySelectorAll(`.${styles.ember}`);
+      embers?.forEach(ember => {
+        gsap.to(ember, {
+          opacity: 0.4,
+          repeat: -1,
+          yoyo: true,
+          duration: 0.2 + Math.random() * 0.3,
+          ease: "sine.inOut"
+        });
       });
-    });
+    }
     
   }, { scope: containerRef });
 
