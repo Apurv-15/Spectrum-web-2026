@@ -36,6 +36,7 @@ export default function Navbar({
 
   // const setHamOpen = useHamStore((state) => state.setHamOpen);
   const setMainHamOpen = useMainHamStore((state) => state.setMainHamOpen);
+  const isMainHamOpen = useMainHamStore((state) => state.isMainHamOpen);
   const navRef = useRef<HTMLElement>(null);
   const [navShow, setNavShow] = useState<number>(1);
   const lastScrollY = useRef<number>(0);
@@ -159,7 +160,7 @@ export default function Navbar({
   }, []);
 
   const handleHamClick = () => {
-    setMainHamOpen(true);
+    setMainHamOpen(!isMainHamOpen);
   };
   return (
     <motion.nav
