@@ -23,6 +23,7 @@ const navItems = [
   { label: "About", katakana: "アバウト", links: "/about" },
   { label: "Events", katakana: "イベンツ", links: "/events" },
   { label: "Hackathon", katakana: "ハッカソン", links: "/events/invasion" },
+  { label: "Game", katakana: "ゲーム", links: "https://engamenet.gdgvitm.tech/" },
 ];
 
 export default function Navbar({
@@ -215,7 +216,13 @@ export default function Navbar({
           <li
             key={item.label}
             className={styles.navItem}
-            onClick={() => goToPage?.(item.links)}
+            onClick={() => {
+              if (item.links.startsWith("http")) {
+                window.open(item.links, "_blank", "noopener,noreferrer");
+              } else {
+                goToPage?.(item.links);
+              }
+            }}
           >
             <div className={styles.navLink}>
               <div className={styles.actualLabel}>{item.label}</div>
