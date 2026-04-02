@@ -23,6 +23,7 @@ const navItems = [
   { label: "About", katakana: "アバウト", links: "/about" },
   { label: "Events", katakana: "イベンツ", links: "/events" },
   { label: "Hackathon", katakana: "ハッカソン", links: "/events/invasion" },
+  { label: "Problems", katakana: "プロブレム", links: "/events/invasion/problem-statements" },
   { label: "Game", katakana: "ゲーム", links: "https://engamenet.gdgvitm.tech/" },
 ];
 
