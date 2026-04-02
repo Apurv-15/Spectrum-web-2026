@@ -17,6 +17,7 @@ const HeavenlyStrike = lazy(() => import("./pages/heavenlyStrike/HeavenlyStrike"
 const AiAgents = lazy(() => import("./pages/aiAgents/AiAgents"));
 const WayOfGhost = lazy(() => import("./pages/wayOfGhost/WayOfGhost"));
 const Invasion = lazy(() => import("./pages/invasion/Invasion"));
+const ProblemStatements = lazy(() => import("./pages/problemStatements/ProblemStatements"));
 
 export const navContext = createContext<{
   goToPage?: (page: string) => void;
@@ -31,6 +32,7 @@ const pageList = [
   "events/ai-agents",
   "events/way-of-ghost",
   "events/invasion",
+  "events/invasion/problem-statements",
   "about",
 ];
 
@@ -130,6 +132,7 @@ export default function App() {
         {currentPage === "events/ai-agents" && <AiAgents />}
         {currentPage === "events/way-of-ghost" && <WayOfGhost />}
         {currentPage === "events/invasion" && <Invasion />}
+        {currentPage === "events/invasion/problem-statements" && <ProblemStatements />}
         {currentPage === "about" && <AboutUs />}
       </Suspense>
       <Analytics />

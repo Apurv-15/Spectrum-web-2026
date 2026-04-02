@@ -1,0 +1,374 @@
+@use "../../assets/global.scss" as *;
+
+.container {
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: $textCream;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.backgroundWrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bgParallax {
+  position: absolute;
+  inset: 0;
+  background-image: url("/images/invasion/samurai_bg_v2.png");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.25;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.55) 50%,
+    rgba(0, 0, 0, 0.8) 100%
+  );
+}
+
+.backBtn {
+  position: fixed;
+  top: 30px;
+  left: 30px;
+  z-index: 100;
+}
+
+// ── Hero ─────────────────────────────────────────────────────────────────────
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 120px 20px 50px;
+  position: relative;
+  z-index: 1;
+}
+
+.heroBadge {
+  font-family: "DM Serif Text", serif;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border: 1px solid;
+  margin-bottom: 20px;
+}
+
+.heroTitle {
+  font-family: $primaryFont;
+  font-size: clamp(36px, 8vw, 90px);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: $textCream;
+  margin-bottom: 14px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.heroTagline {
+  font-family: "Shippori Mincho", serif;
+  font-size: clamp(16px, 2.5vw, 22px);
+  color: rgba(255, 223, 208, 0.5);
+  font-style: italic;
+}
+
+.heroDivider {
+  width: 100px;
+  height: 2px;
+  margin-top: 32px;
+}
+
+// ── Tab Bar ───────────────────────────────────────────────────────────────────
+
+.tabBar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 20px;
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 223, 208, 0.06);
+}
+
+.tab {
+  font-family: "DM Serif Text", serif;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 8px 20px;
+  border: 1px solid rgba(255, 223, 208, 0.15);
+  background: transparent;
+  color: rgba(255, 223, 208, 0.45);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+
+  &:hover {
+    color: rgba(255, 223, 208, 0.9);
+    border-color: rgba(255, 223, 208, 0.4);
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.tabActive {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+// ── Content ───────────────────────────────────────────────────────────────────
+
+.content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 60px 24px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+.domainHeader {
+  margin-bottom: 48px;
+  text-align: center;
+}
+
+.domainLabel {
+  font-family: "DM Serif Text", serif;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 8px;
+  opacity: 0.7;
+}
+
+.domainTitle {
+  font-family: $primaryFont;
+  font-size: clamp(28px, 5vw, 48px);
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.domainCount {
+  font-family: "Shippori Mincho", serif;
+  font-size: 14px;
+  color: rgba(255, 223, 208, 0.35);
+  letter-spacing: 0.12em;
+}
+
+// ── Cards ────────────────────────────────────────────────────────────────────
+
+.cardGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card {
+  border: 1px solid;
+  background: rgba(255, 255, 255, 0.02);
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.cardExpanded {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.cardHeader {
+  padding: 28px 32px;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: center;
+
+  @media (max-width: 600px) {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    padding: 22px 20px;
+  }
+}
+
+.cardMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 56px;
+}
+
+.cardId {
+  font-family: "DM Serif Text", serif;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.cardNumber {
+  font-family: $primaryFont;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.cardTitle {
+  font-family: "Shippori Mincho", serif;
+  font-size: clamp(15px, 2.2vw, 19px);
+  color: $textCream;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.cardToggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 60px;
+
+  @media (max-width: 600px) {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+}
+
+.toggleIcon {
+  font-family: $primaryFont;
+  font-size: 24px;
+  line-height: 1;
+  transition: transform 0.25s ease;
+}
+
+.toggleOpen {
+  transform: rotate(180deg);
+}
+
+.toggleLabel {
+  font-family: "DM Serif Text", serif;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: rgba(255, 223, 208, 0.35);
+  text-transform: uppercase;
+}
+
+// ── Card Body ─────────────────────────────────────────────────────────────────
+
+.cardBody {
+  padding: 0 32px 32px;
+  border-top: 1px solid rgba(255, 223, 208, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+
+  @media (max-width: 600px) {
+    padding: 0 20px 24px;
+  }
+}
+
+.section {
+  padding-top: 28px;
+}
+
+.sectionTitle {
+  font-family: "DM Serif Text", serif;
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.sectionText {
+  font-family: "Shippori Mincho", serif;
+  font-size: 16px;
+  line-height: 1.85;
+  color: rgba(255, 223, 208, 0.75);
+}
+
+// ── Feature List ──────────────────────────────────────────────────────────────
+
+.featureList {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-family: "Shippori Mincho", serif;
+  font-size: 15px;
+  color: rgba(255, 223, 208, 0.75);
+  line-height: 1.7;
+}
+
+.bullet {
+  min-width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+
+// ── Impact List ───────────────────────────────────────────────────────────────
+
+.impactList {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.impactItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-family: "Shippori Mincho", serif;
+  font-size: 15px;
+  color: rgba(255, 223, 208, 0.75);
+  line-height: 1.7;
+}
+
+.impactBullet {
+  min-width: 10px;
+  height: 10px;
+  border: 1px solid;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+
+.footer {
+  text-align: center;
+  padding: 40px 20px;
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid rgba(255, 223, 208, 0.05);
+
+  p {
+    font-family: "Shippori Mincho", serif;
+    font-size: 13px;
+    color: rgba(255, 223, 208, 0.3);
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+}

@@ -1,9 +1,10 @@
-import { useRef } from "react";
+import { useRef, useContext } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import EventLayout from "../components/eventLayout/EventLayout";
 import styles from "./SamuraiBackground.module.scss";
 import { isTouchDevice } from "../../utils/debounce";
+import { navContext } from "../../App";
 
 const SamuraiBackground = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -106,6 +107,7 @@ const SamuraiBackground = () => {
 };
 
 export default function Invasion() {
+  const { goToPage } = useContext(navContext);
   return (
     <>
       <SamuraiBackground />
@@ -196,6 +198,7 @@ export default function Invasion() {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
             gap: "16px",
+            marginBottom: "32px",
           }}>
             {["Web Development", "Mobile App Development", "Blockchain Development", "No-Code / Low-Code Innovation"].map(
               (theme) => (
@@ -215,6 +218,36 @@ export default function Invasion() {
                 </div>
               )
             )}
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <button
+              onClick={() => goToPage?.("/events/invasion/problem-statements")}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "14px 32px",
+                border: "1px solid rgba(255, 77, 0, 0.5)",
+                background: "rgba(255, 77, 0, 0.08)",
+                color: "#ff4d00",
+                fontFamily: '"DM Serif Text", serif',
+                fontSize: "13px",
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                transition: "background 0.2s, transform 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(255, 77, 0, 0.16)";
+                (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(255, 77, 0, 0.08)";
+                (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
+              }}
+            >
+              View All Problem Statements →
+            </button>
           </div>
         </section>
       </EventLayout>
